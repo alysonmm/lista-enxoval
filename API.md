@@ -7,8 +7,8 @@ Next.js App Router: páginas em `src/app`, mutações via **Server Actions** (`"
 ### Público (mobile-first, sem login)
 | Rota | Descrição |
 |---|---|
-| `/lista/[slug]` | Página pública da lista — produtos, filtro (Todos/Disponíveis/Garantidos), compartilhar, QR |
-| `/lista/[slug]/produto/[itemId]` | Detalhe do produto (Fase 2, opcional no MVP — pode ser modal na própria listagem) |
+| `/lista/[slug]` | Página pública da lista — produtos, filtro (Todos/Disponíveis/Garantidos) via `?filtro=` |
+| `/lista/[slug]/presentear/[itemId]` | Como presentear este item hoje (visita à loja); vira o início do checkout na Fase 2 |
 | `/checkout` | Carrinho → identificação → pagamento (Fase 2) |
 | `/pedido/[orderNumber]` | Confirmação/status do pedido do comprador (Fase 2) |
 
@@ -45,10 +45,10 @@ Next.js App Router: páginas em `src/app`, mutações via **Server Actions** (`"
 | `/admin/configuracoes` | Configurações do sistema | ADMIN |
 | `/admin/logs` | Logs de auditoria | ADMIN |
 
-## 2. API pública (somente leitura, sem sessão)
+## 2. Dados públicos (somente leitura, sem sessão)
 
-### `GET /api/public/lists/[slug]`
-Retorna os dados exibíveis de uma lista para um comprador anônimo.
+### `getPublicGiftListView(slug, pin?)` — `src/modules/gift-lists/public.ts`
+A página `/lista/[slug]` (Server Component) chama esta função diretamente durante o SSR — não existe uma rota JSON separada `/api/public/lists/[slug]`, porque nada no app precisa reconsultar isso via `fetch` no cliente (o filtro Todos/Disponíveis/Garantidos é resolvido com links `?filtro=`, sem JavaScript). Se uma futura integração externa (app mobile, parceiro) precisar do mesmo contrato via HTTP, um route handler fino pode ser adicionado chamando a mesma função — o formato abaixo já reflete exatamente o que ela retorna.
 
 ```jsonc
 {
@@ -77,9 +77,9 @@ Retorna os dados exibíveis de uma lista para um comprador anônimo.
 }
 ```
 
-**Contrato de privacidade (obrigatório, seção 27/132):** o tipo `GiftListItemPublicDTO` (em `src/modules/gift-lists/dto.ts`) **não declara** `desiredQuantity`, `purchasedQuantity`, `reservedQuantity` ou qualquer campo de quantidade/percentual — a omissão é estrutural no tipo, não um filtro em runtime. Nenhum outro campo sensível (seção 42: quantidade total, vendida, restante, valor arrecadado, nomes de outros compradores, telefone/endereço/CPF/e-mail dos pais, vendedor, unidade) é incluído. `tests/integration/public-list-privacy.test.ts` chama esta rota e falha se qualquer chave de quantidade aparecer no JSON, em qualquer profundidade.
+**Contrato de privacidade (obrigatório, seção 27/132):** o tipo `PublicGiftListItem` (em `src/modules/gift-lists/public.ts`) **não declara** `desiredQuantity`, `purchasedQuantity`, `reservedQuantity` ou qualquer campo de quantidade/percentual — a omissão é estrutural no tipo, não um filtro em runtime. Nenhum outro campo sensível (seção 42: quantidade total, vendida, restante, valor arrecadado, nomes de outros compradores, telefone/endereço/CPF/e-mail dos pais, vendedor, unidade) é incluído. `tests/integration/public-list-privacy.test.ts` renderiza a página com dados que têm quantidades internas propositalmente reveladoras e falha se qualquer uma delas aparecer no HTML gerado, em qualquer profundidade (incluindo o payload RSC serializado, não só o texto visível).
 
-Headers de resposta incluem `X-Robots-Tag: noindex, nofollow` e a página `/lista/[slug]` define `robots: { index: false }` nos metadados do Next.js (seção 122).
+A página `/lista/[slug]` define `robots: { index: false, follow: false }` nos metadados do Next.js (seção 122), renderizado como `<meta name="robots">` — confirmado manualmente e coberto pelo teste de privacidade.
 
 ### `POST /api/public/lists/[slug]/items/[itemId]/reserve` (Fase 2)
 Cria reserva temporária (15 min) para checkout. Resposta: `{ reservationId, expiresAt }` ou `409` com `{ error: "temporarily_unavailable" }` — nunca detalha motivo/quantidade (seção 54).
