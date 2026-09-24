@@ -108,13 +108,17 @@ export async function createCategoryAction(formData: FormData): Promise<void> {
   const parsed = categorySchema.safeParse({
     name: formData.get("name"),
     parentCategoryId: formData.get("parentCategoryId") || null,
-    active: formData.get("active") === "on",
   });
   if (!parsed.success) redirect("/admin/categorias?error=invalid_input");
 
   const slug = slugify(parsed.data.name);
   const category = await prisma.category.create({
-    data: { ...parsed.data, slug, parentCategoryId: parsed.data.parentCategoryId || null },
+    data: {
+      name: parsed.data.name,
+      slug,
+      parentCategoryId: parsed.data.parentCategoryId || null,
+      active: true,
+    },
   });
 
   await recordAudit({
