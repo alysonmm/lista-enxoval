@@ -81,7 +81,7 @@ Liga `GiftList` ↔ `Parent`, com `relationship` (`MOTHER|FATHER|GUARDIAN`) e `i
 `productId`, `sku` (unique), `barcode?`, `attributes: Json` (ex. `{ "tamanho": "P", "cor": "Rosa" }`), `priceOverride?`, `active`.
 
 ### `Inventory`
-Estoque **por unidade e variação** (seção 83). `storeId`, `productVariantId`, `physicalQuantity`, `reservedQuantity`, `availableQuantity` (mantido consistente em transação = `physical - reserved`), único em `(storeId, productVariantId)`.
+Estoque **por unidade e variação** (seção 83). `storeId`, `productVariantId`, `physicalQuantity`, `reservedQuantity`, único em `(storeId, productVariantId)`. `availableQuantity` **não é uma coluna** — é sempre calculado como `physicalQuantity - reservedQuantity` no momento da consulta, para eliminar qualquer risco de os dois números divergirem.
 
 ## 6. Item da lista — o coração da regra de privacidade
 
