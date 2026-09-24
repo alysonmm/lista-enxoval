@@ -36,7 +36,7 @@ src/
     benefits/                   # benefit_rules, customer_credits (schema-first)
     reporting/                  # agregações para dashboard/relatórios
     integrations/               # PaymentProvider, ERPProvider, MessagingProvider
-  components/                   # componentes de UI compartilhados (shadcn-based)
+  components/                   # componentes de UI compartilhados (kit próprio sobre Radix)
   lib/                          # infra transversal: prisma client, money, dates, qrcode, permissions
   types/                        # tipos e DTOs compartilhados
 prisma/

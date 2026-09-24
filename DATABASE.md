@@ -28,7 +28,7 @@ Override por usuário sobre o padrão do `role` (`userId`, `permissionId`, `gran
 ### `Parent` (conta do portal dos pais)
 1:1 com `Customer`. Guarda `passwordHash?`, `magicLinkToken?`/`magicLinkExpiresAt?` (login sem senha), `termsAcceptedAt?`.
 
-> Sessão usa estratégia **JWT** (Auth.js) — não há tabelas `Session`/`Account` do adapter, pois não há login social/OAuth no MVP.
+> Sessão usa JWT próprio (`jose`) em cookie httpOnly — não há tabelas `Session`/`Account` de adapter, pois não há login social/OAuth no MVP e a autenticação (`src/lib/auth`) é implementação própria, não Auth.js/NextAuth (ver `ARCHITECTURE.md`).
 
 ## 2. Lojas
 

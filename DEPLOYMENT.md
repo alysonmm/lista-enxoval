@@ -17,7 +17,7 @@ Ver `.env.example` na raiz. Resumo:
 | Variável | Uso |
 |---|---|
 | `DATABASE_URL` | Conexão PostgreSQL (Prisma) |
-| `AUTH_SECRET` | Segredo de assinatura de sessão (Auth.js) |
+| `AUTH_SECRET` | Segredo de assinatura do JWT de sessão (`src/lib/auth`, via `jose`) |
 | `APP_URL` | URL pública base (usada em links/QR Code/webhooks) |
 | `PAYMENT_PROVIDER` | `manual` (dev/MVP) \| `mercadopago` \| `pagarme` \| `asaas` \| `stripe` (Fase 2) |
 | `PAYMENT_API_KEY` | Chave do gateway ativo |

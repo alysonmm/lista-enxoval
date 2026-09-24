@@ -29,6 +29,19 @@ npm run dev
 
 Veja `DEPLOYMENT.md` para detalhes de configuração de banco local/Docker e variáveis de ambiente.
 
+## Dados de demonstração
+
+`npm run db:seed` recria (sempre do zero) 3 unidades, 8 funcionários, 10 clientes e 3 listas reais — incluindo os cenários da própria especificação: um item totalmente presenteado (Macacão Tricot), um cancelado e reaberto (Kit Berço Nuvem) e um ainda intocado (Bolsa Maternidade).
+
+| Acesso | Login | Senha |
+|---|---|---|
+| Painel — Administrador | `admin@pontodascriancas.com.br` | `demo1234` |
+| Painel — Gerente (PDC1) | `gerente.iguatemi@pontodascriancas.com.br` | `demo1234` |
+| Painel — Vendedor (PDC1) | `vendedor1@pontodascriancas.com.br` | `demo1234` |
+| Portal dos pais — Mariana Souza | `(85) 99999-0001` | `demo1234` |
+
+Listas públicas: `/lista/enxoval-da-helena`, `/lista/enxoval-do-miguel`, `/lista/enxoval-do-bebe-ferreira`.
+
 ## Stack
 
-Next.js (App Router) · TypeScript · Tailwind CSS · shadcn/ui · PostgreSQL · Prisma · Auth.js · Zod · Vitest.
+Next.js (App Router) · React · TypeScript strict · Tailwind CSS v4 · Radix UI · PostgreSQL · Prisma · Zod · bcryptjs + jose (autenticação própria) · Vitest.
