@@ -50,6 +50,21 @@ export default async function GiftListsPage({
             { publicId: { contains: q, mode: "insensitive" } },
             { slug: { contains: q, mode: "insensitive" } },
             { baby: { name: { contains: q, mode: "insensitive" } } },
+            {
+              parents: {
+                some: {
+                  parent: {
+                    customer: {
+                      OR: [
+                        { name: { contains: q, mode: "insensitive" } },
+                        { phone: { contains: q } },
+                        { cpf: { contains: q } },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
           ],
         }
       : {}),
@@ -77,7 +92,11 @@ export default async function GiftListsPage({
       </div>
 
       <form method="GET" className="flex max-w-sm gap-2">
-        <Input name="q" placeholder="Buscar por bebê, título ou código" defaultValue={q ?? ""} />
+        <Input
+          name="q"
+          placeholder="Bebê, mãe/pai, telefone, CPF, título ou código"
+          defaultValue={q ?? ""}
+        />
         <Button type="submit" variant="secondary">
           Buscar
         </Button>
