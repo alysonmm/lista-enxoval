@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fffdfb;
+  --foreground: #2b2622;
+
+  --card: #ffffff;
+  --card-foreground: #2b2622;
+
+  --primary: #c17a5f;
+  --primary-foreground: #fffdfb;
+
+  --secondary: #eef1ea;
+  --secondary-foreground: #33422f;
+
+  --muted: #f4efe9;
+  --muted-foreground: #7a7168;
+
+  --accent: #dce7e0;
+  --accent-foreground: #1f3b30;
+
+  --success: #3f7a53;
+  --success-foreground: #ffffff;
+
+  --warning: #b8863b;
+  --warning-foreground: #ffffff;
+
+  --destructive: #b0453c;
+  --destructive-foreground: #ffffff;
+
+  --border: #e7e0d7;
+  --input: #e7e0d7;
+  --ring: #c17a5f;
+
+  --radius: 0.75rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 0.35rem);
+  --radius-md: calc(var(--radius) - 0.15rem);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.35rem);
+
+  --font-sans: var(--font-sans);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

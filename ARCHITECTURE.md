@@ -4,12 +4,12 @@
 
 | Camada | Escolha | Motivo |
 |---|---|---|
-| Frontend | Next.js 15 (App Router) + React 19 + TypeScript strict | SSR/SSG para SEO controlado e mobile-first na página pública |
-| Estilo | Tailwind CSS + shadcn/ui (Radix) | Produtividade, consistência visual, acessível |
+| Frontend | Next.js 15.5.x (App Router) + React 19.1 + TypeScript strict | SSR/SSG para SEO controlado e mobile-first na página pública. Fixado em 15.5.x (não 16.x): evita o rename `middleware→proxy`, Turbopack como padrão e o modelo "Cache Components", ainda muito recentes no momento desta implementação |
+| Estilo | Tailwind CSS + kit próprio `src/components/ui` sobre Radix primitives | Mesma convenção do shadcn/ui (cva, Radix, `cn()`); componentes autorados localmente pois o registro `ui.shadcn.com` está fora da política de rede deste ambiente — Radix e Tailwind em si vêm do npm normalmente |
 | Backend | Next.js Route Handlers + Server Actions | Evita microserviços (seção 105/135); um único deploy |
 | Banco | PostgreSQL 16 | Transações fortes, essencial para concorrência de estoque/reserva |
-| ORM | Prisma | Migrations tipadas, schema único como fonte de verdade |
-| Autenticação | Auth.js (NextAuth v5), credenciais + sessão JWT | Suporta múltiplos tipos de usuário (funcionário, pai) sem SSO externo |
+| ORM | Prisma 6.x (`prisma-client-js`, engine clássica) | Migrations tipadas, schema único como fonte de verdade. Fixado em 6.19.x — Prisma 7 exige driver adapter (`@prisma/adapter-pg`) e muda entrypoints do client; 6.x é estável e reduz risco para um schema deste tamanho |
+| Autenticação | Camada própria (`src/lib/auth`): `jose` (JWT em cookie httpOnly) + `bcryptjs` (hash de senha) | Dois modelos de usuário bem distintos (`User` funcionário e `Parent`) mapeiam mal para o modelo de "providers" do Auth.js; controle total sobre RBAC e sessão com poucas dependências. Ver `next-auth` descartado por exigir mapear duas tabelas de usuário heterogêneas em providers de credenciais separados sem ganho real sobre uma sessão JWT própria |
 | Validação | Zod | Validação de input em toda fronteira (server actions, route handlers) |
 | Storage | Interface compatível com S3 (stub local em dev) | Cloudflare R2/S3/Supabase Storage plugáveis (seção 107) |
 | Cache/Filas | Preparado para Redis (não obrigatório no MVP) | Reservas, rate limiting, filas (seção 108) |
