@@ -47,20 +47,22 @@ function buildTemplateMessage(ctx: GiftMessageContext): string {
 }
 
 function buildPrompt(ctx: GiftMessageContext): string {
-  return `Escreva uma mensagem carinhosa e calorosa, em português do Brasil, de quem está presenteando um bebê para os pais dele — para acompanhar um presente de uma lista de enxoval.
+  const items = joinItems(ctx.itemNames);
+  return `Escreva uma mensagem carinhosa e calorosa, em português do Brasil, de quem está presenteando um bebê para os pais dele — para acompanhar os presentes que essa pessoa acabou de comprar de uma lista de enxoval.
 
 Contexto:
 - Lista: "${ctx.listTitle}"
 - Nome do bebê: ${ctx.babyName ?? "(ainda não revelado — trate como 'o bebê')"}
-- Presente(s) escolhido(s): ${joinItems(ctx.itemNames)}
+- Presente(s) comprado(s) agora, que a mensagem é sobre: ${items}
 - Assinatura: ${ctx.buyerName ?? "(sem assinatura, não invente um nome)"}
 
-Regras:
-- 2 a 4 frases curtas, tom afetuoso e sincero, sem exageros piegas ou clichês em excesso.
-- Pode citar o(s) presente(s) e/ou o nome do bebê quando fizer sentido.
-- No máximo 1 emoji (opcional).
-- Se houver assinatura, termine com ela naturalmente. Se não houver, não invente uma.
-- Responda APENAS com o texto final da mensagem — sem aspas, sem markdown, sem explicações.`;
+Regras (a primeira é a mais importante — mensagens genéricas que não citam o presente são inaceitáveis):
+1. Cite explicitamente, pelo nome, o(s) presente(s) comprado(s) listados acima (${items}) — é sobre isso que a mensagem é.
+2. 2 a 4 frases curtas, tom afetuoso e sincero, sem exageros piegas ou clichês em excesso.
+3. Pode citar o nome do bebê também, quando fizer sentido.
+4. No máximo 1 emoji (opcional).
+5. Se houver assinatura, termine com ela naturalmente. Se não houver, não invente uma.
+6. Responda APENAS com o texto final da mensagem — sem aspas, sem markdown, sem explicações.`;
 }
 
 export async function generateGiftMessage(ctx: GiftMessageContext): Promise<string> {

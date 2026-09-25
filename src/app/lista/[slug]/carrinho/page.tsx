@@ -12,7 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 export default function CartPage() {
   const { slug } = useParams<{ slug: string }>();
   const pin = useSearchParams().get("pin") ?? undefined;
-  const { lines, subtotal, removeItem, setQuantity } = useCart();
+  const { lines, subtotal, removeItem, setQuantity, clear } = useCart();
 
   const listHref = `/lista/${slug}${pin ? `?pin=${pin}` : ""}`;
   const checkoutHref = `/lista/${slug}/checkout${pin ? `?pin=${pin}` : ""}`;
@@ -43,7 +43,16 @@ export default function CartPage() {
         <ArrowLeft className="size-4" /> Continuar escolhendo presentes
       </Link>
 
-      <h1 className="mb-4 text-2xl font-bold text-foreground">Seu carrinho</h1>
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold text-foreground">Seu carrinho</h1>
+        <button
+          type="button"
+          onClick={clear}
+          className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-destructive"
+        >
+          <Trash2 className="size-3.5" /> Esvaziar carrinho
+        </button>
+      </div>
 
       <div className="flex flex-col gap-3">
         {lines.map((line) => (
