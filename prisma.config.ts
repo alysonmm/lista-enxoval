@@ -4,14 +4,21 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
-// `datasource.url` lê process.env diretamente (não o helper `env()` do
-// prisma/config, que valida e lança na hora de carregar este arquivo).
-// schema.prisma já declara `datasource db { url = env("DATABASE_URL") }`,
-// que só é lido quando um comando realmente precisa conectar — o valor
-// aqui não é usado por `prisma generate`. Se a validação eager do `env()`
-// ficasse, até `prisma generate` (que não precisa de banco nenhum)
-// quebraria sem DATABASE_URL, como no primeiro `npm install` de um deploy
-// na Vercel antes do banco ser conectado ao projeto.
+// `datasource.url`/`directUrl` leem process.env diretamente (não o helper
+// `env()` do prisma/config, que valida e lança na hora de carregar este
+// arquivo). Se a validação eager do `env()` ficasse, até `prisma generate`
+// (que não precisa de banco nenhum) quebraria sem DATABASE_URL, como no
+// primeiro `npm install` de um deploy na Vercel antes do banco ser
+// conectado ao projeto.
+//
+// IMPORTANTE: este objeto `datasource` SOBRESCREVE inteiramente o bloco
+// `datasource db { ... }` do schema.prisma — não apenas o `url`. Por isso
+// `directUrl` precisa ser repetido aqui também; sem isso, o `directUrl =
+// env("DATABASE_URL_UNPOOLED")` do schema.prisma é ignorado silenciosamente
+// e `migrate deploy` volta a usar a conexão pooled também para o lock
+// consultivo, reproduzindo o P1002 mesmo com DATABASE_URL_UNPOOLED
+// configurada. Sem pooler envolvido (dev local), cai de volta em
+// DATABASE_URL mesmo.
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
@@ -21,5 +28,6 @@ export default defineConfig({
   engine: "classic",
   datasource: {
     url: process.env.DATABASE_URL ?? "",
+    directUrl: process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL ?? "",
   },
 });
