@@ -12,7 +12,7 @@ export async function generateQrCodeDataUrl(url: string): Promise<string> {
  * Vercel injeta automaticamente em cada deploy, para que links/QR Code já
  * funcionem certos antes de qualquer configuração manual.
  */
-function getAppBaseUrl(): string {
+export function getAppBaseUrl(): string {
   if (process.env.APP_URL) return process.env.APP_URL;
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;

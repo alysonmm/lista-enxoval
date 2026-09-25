@@ -114,7 +114,7 @@ describe("checkout online (carrinho com múltiplos itens)", () => {
     const redirectUrl = await helpers.expectRedirect(
       checkoutOnlineAction(slug, buildForm([{ itemId: happyItemId, quantity: 1 }], { message: "Com muito carinho!" })),
     );
-    expect(redirectUrl).toMatch(new RegExp(`^/lista/${slug}/checkout/confirmado\\?order=`));
+    expect(redirectUrl).toMatch(new RegExp(`^/lista/${slug}/checkout/pagamento\\?order=`));
 
     const updatedItem = await prisma.giftListItem.findUniqueOrThrow({ where: { id: happyItemId } });
     expect(updatedItem.purchasedQuantity).toBe(1);
@@ -162,7 +162,7 @@ describe("checkout online (carrinho com múltiplos itens)", () => {
     ]);
 
     const messages = results.map((r) => (r.status === "rejected" ? (r.reason as Error).message : "NO_REDIRECT_THROWN"));
-    const successes = messages.filter((m) => m.startsWith("REDIRECT:/lista/") && m.includes("/checkout/confirmado"));
+    const successes = messages.filter((m) => m.startsWith("REDIRECT:/lista/") && m.includes("/checkout/pagamento"));
     const failures = messages.filter((m) => m.includes("error=item_unavailable"));
 
     expect(successes).toHaveLength(1);

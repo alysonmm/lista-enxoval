@@ -1,14 +1,22 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { getClientIp } from "@/lib/auth/current-user";
 import { recordAudit } from "@/lib/audit";
 import { generateGiftMessage } from "@/lib/ai";
+import { createCheckoutPreference, isMercadoPagoConfigured } from "@/lib/mercadopago";
+import { getAppBaseUrl } from "@/lib/qrcode";
 import { checkoutOnlineSchema, generateGiftMessageSchema } from "./schemas";
+
+function variantLabel(attributes: unknown): string {
+  if (!attributes || typeof attributes !== "object") return "";
+  const parts = Object.values(attributes as Record<string, string>).filter(Boolean);
+  return parts.length > 0 ? ` (${parts.join(" / ")})` : "";
+}
 
 type Tx = Prisma.TransactionClient;
 
@@ -179,7 +187,62 @@ export async function checkoutOnlineAction(slug: string, formData: FormData): Pr
 
   revalidatePath(`/lista/${slug}`);
   revalidatePath("/admin/vendas");
-  redirect(`/lista/${slug}/checkout/confirmado?order=${orderId}`);
+  redirect(`/lista/${slug}/checkout/pagamento?order=${orderId}`);
+}
+
+/**
+ * Cria uma preferência de Checkout Pro para um pedido já criado (pendente)
+ * e redireciona o comprador para a página do Mercado Pago, onde ele escolhe
+ * cartão de crédito, débito ou Pix e paga — dados de cartão nunca passam
+ * pelo nosso servidor. A confirmação real chega depois pelo webhook
+ * (essencial para o Pix, que é confirmado de forma assíncrona).
+ */
+export async function startMercadoPagoPaymentAction(orderId: string): Promise<void> {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      buyer: true,
+      giftList: true,
+      items: { include: { product: true, variant: true } },
+    },
+  });
+  if (!order || order.channel !== "ONLINE") notFound();
+  const slug = order.giftList.slug;
+
+  if (order.paymentStatus === "APPROVED") {
+    redirect(`/lista/${slug}/checkout/confirmado?order=${orderId}`);
+  }
+  if (order.paymentStatus === "CANCELLED" || order.paymentStatus === "REFUNDED") {
+    redirect(`/lista/${slug}/checkout/pagamento?order=${orderId}&error=order_unavailable`);
+  }
+  if (!isMercadoPagoConfigured()) {
+    redirect(`/lista/${slug}/checkout/pagamento?order=${orderId}&error=mp_not_configured`);
+  }
+
+  const baseUrl = getAppBaseUrl();
+
+  let initPoint: string;
+  try {
+    const preference = await createCheckoutPreference({
+      orderId: order.id,
+      items: order.items.map((item) => ({
+        id: item.id,
+        title: `${item.product.name}${variantLabel(item.variant?.attributes)}`,
+        quantity: item.quantity,
+        unitPriceCents: item.unitPrice,
+      })),
+      payerEmail: order.buyer.email,
+      payerName: order.buyer.name,
+      backUrl: `${baseUrl}/lista/${slug}/checkout/retorno?order=${orderId}`,
+      notificationUrl: `${baseUrl}/api/webhooks/mercadopago`,
+    });
+    initPoint = preference.initPoint;
+  } catch (e) {
+    console.error("Erro ao criar preferência do Mercado Pago:", e);
+    redirect(`/lista/${slug}/checkout/pagamento?order=${orderId}&error=mp_error`);
+  }
+
+  redirect(initPoint);
 }
 
 export async function generateGiftMessageAction(
