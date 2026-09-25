@@ -21,8 +21,7 @@ Ver `.env.example` na raiz. Resumo:
 | `APP_URL` | URL pública base (usada em links/QR Code/webhooks) |
 | `PAYMENT_PROVIDER` | `manual` (dev/MVP) \| `mercadopago` \| `pagarme` \| `asaas` \| `stripe` (Fase 2) |
 | `PAYMENT_API_KEY` | Chave do gateway ativo |
-| `STORAGE_PROVIDER` | `local` (dev) \| `s3` \| `r2` \| `supabase` |
-| `STORAGE_URL` / `STORAGE_KEY` | Credenciais do storage compatível com S3 |
+| `BLOB_READ_WRITE_TOKEN` | Upload de imagem de produto (`src/lib/storage.ts`). Injetada automaticamente pela Vercel ao conectar um Blob store ao projeto — não é definida manualmente. Sem ela (dev local), grava em `public/uploads`. |
 | `EMAIL_PROVIDER` / `EMAIL_API_KEY` | Envio de e-mail transacional |
 | `RESERVATION_TTL_MINUTES` | Padrão `15` (também configurável via `system_settings`) |
 
@@ -63,22 +62,41 @@ docker run --name lista-enxoval-db -e POSTGRES_PASSWORD=lista_enxoval \
 | Script | Ação |
 |---|---|
 | `npm run dev` | Next.js em modo desenvolvimento |
-| `npm run build` | Build de produção |
+| `npm run build` | `prisma migrate deploy` seguido de `next build` — aplica migrations pendentes antes de gerar o build, em qualquer ambiente |
 | `npm run start` | Servir build de produção |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm test` | Vitest (unit + integration) |
-| `npm run db:seed` | Executa `prisma/seed.ts` |
+| `npm run db:seed` | Executa `prisma/seed.ts` — dados de demonstração fictícios, **nunca rodar em produção** |
+| `npm run db:create-admin` | `npx tsx prisma/create-admin.ts <email> <senha> [nome]` — cria o primeiro Administrador real num banco de produção vazio |
 | `npm run db:studio` | Prisma Studio |
+
+`postinstall` roda `prisma generate` automaticamente após `npm install` (necessário para o build gerar o Prisma Client com a versão correta do schema).
 
 ## 7. Checklist de deploy
 
 1. `npm run lint && npm run typecheck && npm test && npm run build` sem erros.
-2. `npx prisma migrate deploy` no ambiente alvo.
-3. Variáveis de ambiente do ambiente alvo revisadas (nunca reaproveitar segredo de outro ambiente).
-4. Confirmar que a rota pública (`/lista/[slug]`) responde com `noindex` e sem campos de quantidade (checagem manual + suíte de testes).
-5. Smoke test: criar lista → publicar → abrir link público → registrar venda presencial → conferir portal dos pais.
+2. Variáveis de ambiente do ambiente alvo revisadas (nunca reaproveitar segredo de outro ambiente — especialmente `AUTH_SECRET`).
+3. Confirmar que a rota pública (`/lista/[slug]`) responde com `noindex` e sem campos de quantidade (checagem manual + suíte de testes).
+4. Smoke test: criar lista → publicar → abrir link público → registrar venda presencial → conferir portal dos pais.
 
-## 8. Storage de imagens
+`npx prisma migrate deploy` avulso não é mais necessário como passo manual — já roda dentro de `npm run build` (item 6).
 
-Interface `StorageProvider` (`src/lib/storage`) abstrai o provedor; em desenvolvimento sem credenciais configuradas, usa-se um provedor local (`public/uploads`) apenas para não bloquear o ambiente — produção deve sempre configurar S3/R2/Supabase Storage.
+## 8. Deploy na Vercel (produção atual)
+
+Stack de produção: **Vercel** (hosting) + **Neon** (Postgres, via integração de Storage da própria Vercel) + **Vercel Blob** (imagens de produto). Todos com plano gratuito suficiente para este projeto.
+
+1. **Banco de dados**: no dashboard da Vercel → aba **Storage** → **Create Database** → **Neon (Postgres)**. Conectar ao projeto — isso já injeta `DATABASE_URL` automaticamente nas variáveis de ambiente do projeto.
+2. **Storage de imagens**: mesma aba **Storage** → **Create Database** → **Blob**. Conectar ao projeto — injeta `BLOB_READ_WRITE_TOKEN` automaticamente.
+3. **Importar o repositório**: **Add New** → **Project** → selecionar `alysonmm/lista-enxoval` → branch a publicar. A Vercel detecta Next.js automaticamente; não é preciso mexer em build command/output.
+4. **Variáveis de ambiente** (Project Settings → Environment Variables), além das injetadas nos passos 1-2:
+   - `AUTH_SECRET`: gerar uma string aleatória forte só para produção (nunca reaproveitar a de dev) — ex.: `openssl rand -base64 32`.
+   - `PAYMENT_PROVIDER=manual`, `STORAGE_PROVIDER=local` (placeholder, não usado pelo upload — ver seção 3), `EMAIL_PROVIDER=console`, `RESERVATION_TTL_MINUTES=15`.
+   - `APP_URL`: opcional no primeiro deploy — sem ela, `src/lib/qrcode.ts` usa a URL que a própria Vercel injeta (`VERCEL_PROJECT_PRODUCTION_URL`/`VERCEL_URL`), então links e QR Code já saem certos. Defina explicitamente só ao configurar um domínio próprio.
+5. **Deploy**: a Vercel builda e publica sozinha a cada push no branch conectado (`npm run build`, que já roda as migrations — passo 6 abaixo precisa da tabela criada primeiro, então o primeiro deploy é quem cria o schema).
+6. **Primeiro administrador**: com o deploy no ar, rodar uma única vez a partir de uma máquina com Node, apontando para o banco de produção:
+   ```bash
+   DATABASE_URL="<a mesma DATABASE_URL da Vercel>" npx tsx prisma/create-admin.ts admin@suaempresa.com "senha-forte-aqui" "Seu Nome"
+   ```
+   Pegue a `DATABASE_URL` em Project Settings → Environment Variables. **Nunca rode `npm run db:seed` em produção** — ele cria dados fictícios (clientes, listas, senha `demo1234`).
+7. **Domínio próprio (quando tiver um)**: Project Settings → Domains → adicionar o domínio e seguir as instruções de DNS mostradas ali; depois, definir `APP_URL` com esse domínio.

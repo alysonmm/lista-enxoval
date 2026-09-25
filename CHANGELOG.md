@@ -4,6 +4,16 @@ Todas as mudanças relevantes do projeto são documentadas neste arquivo, no for
 
 ## [Unreleased]
 
+### Added — preparação para deploy em produção (Vercel)
+
+- **Upload de imagem em produção**: `src/lib/storage.ts` agora usa **Vercel Blob** (`@vercel/blob`) quando `BLOB_READ_WRITE_TOKEN` está definido — necessário porque o filesystem da Vercel é somente leitura fora de `/tmp` e não persiste entre deploys, então a gravação local em `public/uploads` (que funciona em dev) não sobreviveria em produção. Sem o token, continua gravando localmente.
+- **`APP_URL` com fallback inteligente**: `src/lib/qrcode.ts` agora cai para `VERCEL_PROJECT_PRODUCTION_URL`/`VERCEL_URL` (injetadas automaticamente pela Vercel) quando `APP_URL` não está definida — links e QR Code já saem corretos no primeiro deploy, antes de qualquer domínio próprio ser configurado.
+- **Build pronto para Vercel**: `postinstall` roda `prisma generate`; `npm run build` agora roda `prisma migrate deploy` antes de `next build`, aplicando migrations pendentes automaticamente a cada deploy (idempotente, também seguro em dev local).
+- **`prisma/create-admin.ts`** (`npm run db:create-admin`): cria um único Administrador real num banco de produção vazio, sem rodar o seed de demonstração inteiro (que grava dados fictícios e a senha `demo1234`).
+- `DEPLOYMENT.md` ganhou uma seção com o passo a passo real de deploy (Vercel + Neon + Vercel Blob, todos no plano gratuito), e `.env.example`/a tabela de variáveis foram atualizados para refletir o storage de verdade (antes documentava um `StorageProvider`/S3 genérico que nunca chegou a ser implementado).
+
+Validado: `npm run build` local confirma que `prisma migrate deploy` roda antes do build sem quebrar nada (nenhuma migration pendente); `prisma/create-admin.ts` testado criando, rejeitando e-mail duplicado e rejeitando senha curta. `npm test` (22/22), typecheck e lint seguem limpos.
+
 ### Added — melhorias de UI/UX (feedback pós-deploy local)
 
 - **Upload de imagem de produto**: `src/lib/storage.ts` grava o arquivo em `public/uploads/products` (dev/local; produção deve trocar por S3/R2, ver `DEPLOYMENT.md`). Substitui o antigo "só URL colada" por um `<input type="file">` de verdade nas páginas de novo/editar produto, com thumbnail na listagem e na edição; o campo de URLs continua disponível para imagens adicionais/externas.
