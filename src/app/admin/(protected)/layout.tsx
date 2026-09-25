@@ -15,7 +15,6 @@ const NAV: { href: string; label: string }[] = [
   { href: "/admin/vendedores", label: "Funcionários" },
   { href: "/admin/unidades", label: "Unidades" },
   { href: "/admin/relatorios", label: "Relatórios" },
-  { href: "/admin/configuracoes", label: "Configurações" },
 ];
 
 function roleLabel(role: StaffRole): string {

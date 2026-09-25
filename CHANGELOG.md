@@ -42,5 +42,21 @@ Todas as mudanças relevantes do projeto são documentadas neste arquivo, no for
 **Dados de demonstração**
 - `prisma/seed.ts` recria 3 unidades, 1 administrador, 2 gerentes, 5 vendedores, 10 clientes, 3 listas, 50 produtos, compras online e presenciais, um pedido cancelado, produtos completos e disponíveis — reproduzindo os cenários da própria especificação (seções 128–131).
 
+**Funcionários (`/admin/vendedores`)**
+- CRUD de funcionários (Administrador/Gerente/Vendedor), restrito a ADMIN: criação com senha inicial, edição (dados, papel, unidade, ativo/inativo), redefinição de senha. Unidade obrigatória para Gerente/Vendedor, opcional para Administrador. Um admin não pode desativar a própria conta.
+- Item que faltava no MVP: a seção 133 exige "cadastrar funcionário" no fluxo ponta a ponta, e o próprio menu lateral já linkava para `/admin/vendedores`, mas a página nunca tinha sido implementada — só era possível criar funcionário pelo seed.
+
+**Histórico de vendas na lista**
+- `/admin/listas/[id]` ganhou uma seção "Histórico de vendas" com todos os pedidos daquela lista (produto, quantidade, comprador, total, status, data, link para o pedido) — fecha o critério "ver histórico" da seção 133, que antes só dava para inferir cruzando `/admin/vendas` manualmente.
+
+### Testes automatizados (seções 140/141)
+- Suíte Vitest contra Postgres real (sem mocks de banco; só a "cola" do Next.js é mockada), cobrindo:
+  - **Privacidade pública (obrigatório, seção 141)**: guard de tipo em tempo de compilação + checagens em runtime garantindo que a página pública nunca serializa `desired/purchased/reserved/remaining_quantity`, em todos os estados de lista (disponível, presenteado, com PIN, inexistente).
+  - **Permissões**: papel padrão × override individual (`UserPermission`).
+  - **Concorrência**: duas vendas simultâneas pela última unidade — exatamente uma aprovada, sem overselling.
+  - **Cancelamento**: estorno de pagamento/estoque/quantidade sem apagar o pedido, e proteção contra cancelar duas vezes.
+  - **Criação de lista e regras de quantidade**: transação atômica bebê+responsável+lista, e a trava que impede reduzir a quantidade desejada abaixo do já comprado/reservado.
+- Bugs reais encontrados e corrigidos ao escrever os testes: `cancelOrderAction` deixava um `SaleError` escapar como exceção não tratada em vez de redirecionar com mensagem amigável (agora envolvido em try/catch como `registerInStoreSaleAction`); o helper de teste `uniqueId()` podia colidir entre arquivos de teste rodando em paralelo (corrigido com um componente aleatório).
+
 ### Validado manualmente
-Fluxos ponta a ponta testados com Playwright contra um Postgres local: criação de lista, compra presencial, teste de concorrência com dois compradores disputando a última unidade (exatamente uma venda aprovada), cancelamento com estorno, portal dos pais, dashboard/relatórios com números conferidos, e ausência de qualquer campo de quantidade no HTML (incluindo o payload RSC serializado) da página pública em todos os estados da lista.
+Fluxos ponta a ponta testados com Playwright contra um Postgres local: criação de lista, compra presencial, teste de concorrência com dois compradores disputando a última unidade (exatamente uma venda aprovada), cancelamento com estorno, portal dos pais, dashboard/relatórios com números conferidos, ausência de qualquer campo de quantidade no HTML (incluindo o payload RSC serializado) da página pública em todos os estados da lista, e o CRUD de funcionários (criação, login com a senha definida, edição, desativação bloqueando login, redefinição de senha, bloqueio de autodesativação do admin) — confirmado também via consulta direta ao banco.

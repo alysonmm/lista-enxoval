@@ -41,9 +41,9 @@ Next.js App Router: páginas em `src/app`, mutações via **Server Actions** (`"
 | `/admin/vendedores` | Funcionários | ADMIN |
 | `/admin/unidades` | Unidades | ADMIN |
 | `/admin/relatorios` | Relatórios com filtros | ADMIN, MANAGER |
-| `/admin/beneficios` | Faixas de benefício | ADMIN |
-| `/admin/configuracoes` | Configurações do sistema | ADMIN |
-| `/admin/logs` | Logs de auditoria | ADMIN |
+| `/admin/beneficios` | Faixas de benefício (Fase 3) | ADMIN |
+| `/admin/configuracoes` | Configurações do sistema (fora do escopo da Fase 1 — seção 123) | ADMIN |
+| `/admin/logs` | Logs de auditoria (fora do escopo da Fase 1 — seção 123; dados já gravados via `recordAudit`, só falta a tela) | ADMIN |
 
 ## 2. Dados públicos (somente leitura, sem sessão)
 

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { requireStaffPage } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { formatCentsToBRL } from "@/lib/money";
-import { formatDateOnly } from "@/lib/dates";
+import { formatDateOnly, formatDateTime } from "@/lib/dates";
 import { encodeProductOption } from "@/modules/gift-lists/schemas";
 import {
   addGiftListItemAction,
@@ -92,6 +92,10 @@ export default async function GiftListDetailPage({
       items: {
         include: { product: true, variant: true },
         orderBy: { createdAt: "asc" },
+      },
+      orders: {
+        include: { buyer: true, items: { include: { product: true, variant: true } } },
+        orderBy: { createdAt: "desc" },
       },
     },
   });
@@ -428,6 +432,66 @@ export default async function GiftListDetailPage({
               Adicionar produto
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Histórico de vendas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-lg border border-border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Produto</TableHead>
+                  <TableHead>Qtd.</TableHead>
+                  <TableHead>Comprador</TableHead>
+                  <TableHead>Total</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {list.orders.map((order) => {
+                  const isCancelled = order.paymentStatus === "CANCELLED" || order.paymentStatus === "REFUNDED";
+                  return (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-medium">
+                        {order.items
+                          .map((item) => `${item.product.name}${variantLabel(item.variant?.attributes)}`)
+                          .join(", ")}
+                      </TableCell>
+                      <TableCell>{order.items.reduce((sum, item) => sum + item.quantity, 0)}</TableCell>
+                      <TableCell>
+                        {order.hideBuyerFromParents ? `${order.buyer.name} (anônimo p/ os pais)` : order.buyer.name}
+                      </TableCell>
+                      <TableCell>{formatCentsToBRL(order.total)}</TableCell>
+                      <TableCell>
+                        <Badge variant={isCancelled ? "destructive" : "success"}>
+                          {isCancelled ? "Cancelado" : "Aprovado"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{formatDateTime(order.createdAt)}</TableCell>
+                      <TableCell>
+                        <Button asChild variant="ghost" size="sm">
+                          <Link href={`/admin/vendas/${order.id}`}>Ver</Link>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+                {list.orders.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-muted-foreground">
+                      Nenhuma venda registrada ainda para esta lista.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
