@@ -129,11 +129,19 @@ export default async function GiftListDetailPage({
 
   const productOptions = products.flatMap((product) =>
     product.variants.length > 0
-      ? product.variants.map((variant) => ({
-          value: encodeProductOption(product.id, variant.id),
-          label: `${product.name}${variantLabel(variant.attributes)}`,
-        }))
-      : [{ value: encodeProductOption(product.id), label: product.name }],
+      ? product.variants.map((variant) => {
+          const price = variant.priceOverride ?? product.promoPrice ?? product.price;
+          return {
+            value: encodeProductOption(product.id, variant.id),
+            label: `${product.name}${variantLabel(variant.attributes)} — ${formatCentsToBRL(price)}`,
+          };
+        })
+      : [
+          {
+            value: encodeProductOption(product.id),
+            label: `${product.name} — ${formatCentsToBRL(product.promoPrice ?? product.price)}`,
+          },
+        ],
   );
 
   return (
