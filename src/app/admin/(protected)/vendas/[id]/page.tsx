@@ -25,6 +25,8 @@ import {
 const ERROR_MESSAGES: Record<string, string> = {
   invalid_input: "Informe o motivo do cancelamento.",
   forbidden: "Você não tem permissão para cancelar vendas.",
+  not_found: "Pedido não encontrado.",
+  already_cancelled: "Este pedido já foi cancelado anteriormente.",
 };
 
 const CHANNEL_LABEL: Record<string, string> = {

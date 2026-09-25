@@ -188,46 +188,51 @@ export async function cancelOrderAction(orderId: string, formData: FormData): Pr
   if (!parsed.success) redirect(`/admin/vendas/${orderId}?error=invalid_input`);
   const { reason } = parsed.data;
 
-  await prisma.$transaction(async (tx) => {
-    const order = await tx.order.findUnique({ where: { id: orderId }, include: { items: true } });
-    if (!order) throw new SaleError("not_found");
-    if (order.paymentStatus === "CANCELLED" || order.paymentStatus === "REFUNDED") {
-      throw new SaleError("already_cancelled");
-    }
+  try {
+    await prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({ where: { id: orderId }, include: { items: true } });
+      if (!order) throw new SaleError("not_found");
+      if (order.paymentStatus === "CANCELLED" || order.paymentStatus === "REFUNDED") {
+        throw new SaleError("already_cancelled");
+      }
 
-    for (const orderItem of order.items) {
-      await lockGiftListItem(tx, orderItem.giftListItemId);
-      await tx.giftListItem.update({
-        where: { id: orderItem.giftListItemId },
-        data: { purchasedQuantity: { decrement: orderItem.quantity } },
+      for (const orderItem of order.items) {
+        await lockGiftListItem(tx, orderItem.giftListItemId);
+        await tx.giftListItem.update({
+          where: { id: orderItem.giftListItemId },
+          data: { purchasedQuantity: { decrement: orderItem.quantity } },
+        });
+
+        if (orderItem.variantId && order.storeId) {
+          await lockInventory(tx, order.storeId, orderItem.variantId);
+          await tx.inventory.update({
+            where: {
+              storeId_productVariantId: { storeId: order.storeId, productVariantId: orderItem.variantId },
+            },
+            data: { physicalQuantity: { increment: orderItem.quantity } },
+          });
+        }
+      }
+
+      await tx.payment.updateMany({
+        where: { orderId, status: { notIn: ["CANCELLED", "REFUNDED"] } },
+        data: { status: "CANCELLED" },
       });
 
-      if (orderItem.variantId && order.storeId) {
-        await lockInventory(tx, order.storeId, orderItem.variantId);
-        await tx.inventory.update({
-          where: {
-            storeId_productVariantId: { storeId: order.storeId, productVariantId: orderItem.variantId },
-          },
-          data: { physicalQuantity: { increment: orderItem.quantity } },
-        });
-      }
-    }
-
-    await tx.payment.updateMany({
-      where: { orderId, status: { notIn: ["CANCELLED", "REFUNDED"] } },
-      data: { status: "CANCELLED" },
+      await tx.order.update({
+        where: { id: orderId },
+        data: {
+          paymentStatus: "CANCELLED",
+          cancelledAt: new Date(),
+          cancelReason: reason,
+          cancelledById: session.userId,
+        },
+      });
     });
-
-    await tx.order.update({
-      where: { id: orderId },
-      data: {
-        paymentStatus: "CANCELLED",
-        cancelledAt: new Date(),
-        cancelReason: reason,
-        cancelledById: session.userId,
-      },
-    });
-  });
+  } catch (e) {
+    if (e instanceof SaleError) redirect(`/admin/vendas/${orderId}?error=${e.code}`);
+    throw e;
+  }
 
   await recordAudit({
     actorUserId: session.userId,
