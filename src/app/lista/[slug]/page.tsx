@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Gift, Heart, ImageOff } from "lucide-react";
+import { Heart, ImageOff } from "lucide-react";
 import type { Metadata } from "next";
 
 import { getPublicGiftListView } from "@/modules/gift-lists/public";
 import { formatCentsToBRL } from "@/lib/money";
+import { AddToCartButton } from "@/components/cart/add-to-cart-button";
+import { CartBadge } from "@/components/cart/cart-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -38,7 +40,7 @@ export async function generateMetadata({
   };
 }
 
-type Filter = "todos" | "disponiveis" | "garantidos";
+type Filter = "todos" | "disponiveis";
 
 function FilterTab({
   href,
@@ -104,11 +106,9 @@ export default async function PublicGiftListPage({
     );
   }
 
-  const filter: Filter =
-    filtro === "disponiveis" || filtro === "garantidos" ? filtro : "todos";
+  const filter: Filter = filtro === "disponiveis" ? "disponiveis" : "todos";
   const filteredItems = view.items.filter((item) => {
     if (filter === "disponiveis") return item.canPurchase;
-    if (filter === "garantidos") return !item.canPurchase;
     return true;
   });
 
@@ -158,11 +158,6 @@ export default async function PublicGiftListPage({
           label="Disponíveis"
           active={filter === "disponiveis"}
         />
-        <FilterTab
-          href={`/lista/${slug}?filtro=garantidos`}
-          label="Já garantidos"
-          active={filter === "garantidos"}
-        />
       </nav>
 
       <main className="mx-auto grid max-w-4xl grid-cols-1 gap-4 px-4 py-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -198,11 +193,13 @@ export default async function PublicGiftListPage({
                 </span>
               </div>
               {item.canPurchase ? (
-                <Button asChild className="mt-1 w-full">
-                  <Link href={`/lista/${slug}/presentear/${item.id}`}>
-                    <Gift className="size-4" /> Presentear
-                  </Link>
-                </Button>
+                <AddToCartButton
+                  itemId={item.id}
+                  productName={item.productName}
+                  variantLabel={item.variantLabel}
+                  image={item.image}
+                  price={item.price}
+                />
               ) : (
                 <Button disabled variant="secondary" className="mt-1 w-full">
                   ✓ Presente já garantido
@@ -217,6 +214,7 @@ export default async function PublicGiftListPage({
           </p>
         )}
       </main>
+      <CartBadge slug={slug} pin={pin} />
     </div>
   );
 }

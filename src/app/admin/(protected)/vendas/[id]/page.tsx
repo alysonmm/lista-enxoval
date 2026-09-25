@@ -7,11 +7,12 @@ import { prisma } from "@/lib/prisma";
 import { formatCentsToBRL } from "@/lib/money";
 import { formatDateTime } from "@/lib/dates";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions";
-import { cancelOrderAction } from "@/modules/sales/actions";
+import { cancelOrderAction, markOrderPaidAction } from "@/modules/sales/actions";
 import { Badge } from "@/components/ui/badge";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -23,10 +24,11 @@ import {
 } from "@/components/ui/table";
 
 const ERROR_MESSAGES: Record<string, string> = {
-  invalid_input: "Informe o motivo do cancelamento.",
+  invalid_input: "Informe os dados corretamente.",
   forbidden: "Você não tem permissão para cancelar vendas.",
   not_found: "Pedido não encontrado.",
   already_cancelled: "Este pedido já foi cancelado anteriormente.",
+  not_pending: "Este pedido não está com pagamento pendente.",
 };
 
 const CHANNEL_LABEL: Record<string, string> = {
@@ -88,8 +90,10 @@ export default async function OrderDetailPage({
   }
 
   const isCancelled = order.paymentStatus === "CANCELLED" || order.paymentStatus === "REFUNDED";
+  const isPending = order.paymentStatus === "PENDING" || order.paymentStatus === "PROCESSING";
   const canCancel = session.role === "ADMIN" || (await hasPermission(session, PERMISSIONS.SALES_CANCEL));
   const cancelWithId = cancelOrderAction.bind(null, order.id);
+  const markPaidWithId = markOrderPaidAction.bind(null, order.id);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -104,8 +108,8 @@ export default async function OrderDetailPage({
           <h1 className="text-2xl font-bold text-foreground">
             Pedido #{order.sequentialNumber.toString().padStart(6, "0")}
           </h1>
-          <Badge variant={isCancelled ? "destructive" : "success"}>
-            {isCancelled ? "Cancelado" : "Aprovado"}
+          <Badge variant={isCancelled ? "destructive" : isPending ? "warning" : "success"}>
+            {isCancelled ? "Cancelado" : isPending ? "Pagamento pendente" : "Aprovado"}
           </Badge>
         </div>
         <p className="text-sm text-muted-foreground">
@@ -227,6 +231,34 @@ export default async function OrderDetailPage({
           </div>
         </CardContent>
       </Card>
+
+      {isPending && !isCancelled && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Confirmar pagamento</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <p className="text-sm text-muted-foreground">
+              Pedido feito pelo site — o pagamento ainda não foi confirmado. Os pais só veem esse
+              presente depois que o pagamento for marcado como recebido.
+            </p>
+            <form action={markPaidWithId} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <div className="flex flex-1 flex-col gap-1.5">
+                <Label htmlFor="paymentMethod">Forma de pagamento</Label>
+                <Select id="paymentMethod" name="paymentMethod" defaultValue="PIX">
+                  <option value="CASH">Dinheiro</option>
+                  <option value="PIX">Pix</option>
+                  <option value="DEBIT_CARD">Débito</option>
+                  <option value="CREDIT_CARD">Crédito</option>
+                  <option value="STORE_FINANCING">Crediário</option>
+                  <option value="OTHER">Outra</option>
+                </Select>
+              </div>
+              <SubmitButton>Marcar como pago</SubmitButton>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
       {isCancelled ? (
         <Card>

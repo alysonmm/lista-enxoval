@@ -7,10 +7,10 @@ Next.js App Router: páginas em `src/app`, mutações via **Server Actions** (`"
 ### Público (mobile-first, sem login)
 | Rota | Descrição |
 |---|---|
-| `/lista/[slug]` | Página pública da lista — produtos, filtro (Todos/Disponíveis/Garantidos) via `?filtro=` |
-| `/lista/[slug]/presentear/[itemId]` | Como presentear este item hoje (visita à loja); vira o início do checkout na Fase 2 |
-| `/checkout` | Carrinho → identificação → pagamento (Fase 2) |
-| `/pedido/[orderNumber]` | Confirmação/status do pedido do comprador (Fase 2) |
+| `/lista/[slug]` | Página pública da lista — produtos, filtro (Todos/Disponíveis/Garantidos) via `?filtro=`; "Adicionar ao carrinho" por item |
+| `/lista/[slug]/carrinho` | Carrinho (client-side, `localStorage` por slug) — ajustar quantidade, remover, ir para o checkout |
+| `/lista/[slug]/checkout` | Identificação do comprador + mensagem carinhosa (com sugestão via IA) → confirma o pedido |
+| `/lista/[slug]/checkout/confirmado` | Confirmação do pedido (`?order=`) — pagamento é finalizado na loja (sem gateway integrado ainda, seção "Fase 2") |
 
 ### Portal dos pais (login: e-mail/telefone + senha ou magic link)
 | Rota | Descrição |

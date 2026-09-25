@@ -9,7 +9,7 @@ import { reaisToCents } from "@/lib/money";
 import { getClientIp, getStaffSession, type StaffSessionPayload } from "@/lib/auth/current-user";
 import { recordAudit } from "@/lib/audit";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions";
-import { cancelOrderSchema, inStoreSaleSchema } from "./schemas";
+import { cancelOrderSchema, inStoreSaleSchema, markOrderPaidSchema } from "./schemas";
 
 type Tx = Prisma.TransactionClient;
 
@@ -240,6 +240,62 @@ export async function cancelOrderAction(orderId: string, formData: FormData): Pr
     entityType: "Order",
     entityId: orderId,
     changes: { reason },
+    ipAddress: await getClientIp(),
+  });
+
+  revalidatePath(`/admin/vendas/${orderId}`);
+  revalidatePath("/admin/vendas");
+  redirect(`/admin/vendas/${orderId}?saved=1`);
+}
+
+/**
+ * Fecha o ciclo de um pedido ONLINE: o site cria o pedido com pagamento
+ * pendente (não há gateway integrado ainda — seção "Fase 2"), e a equipe
+ * confirma aqui quando o comprador efetivamente paga (na loja, Pix
+ * combinado, etc.). Só então o pedido passa a aparecer para os pais.
+ */
+export async function markOrderPaidAction(orderId: string, formData: FormData): Promise<void> {
+  const session = await requireStaff();
+
+  const parsed = markOrderPaidSchema.safeParse({ paymentMethod: formData.get("paymentMethod") });
+  if (!parsed.success) redirect(`/admin/vendas/${orderId}?error=invalid_input`);
+  const { paymentMethod } = parsed.data;
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({ where: { id: orderId } });
+      if (!order) throw new SaleError("not_found");
+      if (order.paymentStatus !== "PENDING" && order.paymentStatus !== "PROCESSING") {
+        throw new SaleError("not_pending");
+      }
+
+      await tx.payment.create({
+        data: {
+          orderId,
+          method: paymentMethod,
+          status: "APPROVED",
+          amount: order.total,
+          paidAt: new Date(),
+          storeId: order.storeId,
+        },
+      });
+
+      await tx.order.update({
+        where: { id: orderId },
+        data: { paymentStatus: "APPROVED" },
+      });
+    });
+  } catch (e) {
+    if (e instanceof SaleError) redirect(`/admin/vendas/${orderId}?error=${e.code}`);
+    throw e;
+  }
+
+  await recordAudit({
+    actorUserId: session.userId,
+    action: "order.mark_paid",
+    entityType: "Order",
+    entityId: orderId,
+    changes: { paymentMethod },
     ipAddress: await getClientIp(),
   });
 

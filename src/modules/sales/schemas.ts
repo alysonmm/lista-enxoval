@@ -29,3 +29,7 @@ export type InStoreSaleInput = z.infer<typeof inStoreSaleSchema>;
 export const cancelOrderSchema = z.object({
   reason: z.string().trim().min(3, "Informe o motivo do cancelamento."),
 });
+
+export const markOrderPaidSchema = z.object({
+  paymentMethod: paymentMethodEnum,
+});
