@@ -15,25 +15,34 @@ const ERROR_MESSAGES: Record<string, string> = {
 export default async function NewStaffPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; cloneFrom?: string }>;
 }) {
   await requireStaffPage(["ADMIN"]);
-  const { error } = await searchParams;
+  const { error, cloneFrom } = await searchParams;
   const message = error ? (ERROR_MESSAGES[error] ?? "Não foi possível salvar.") : null;
 
-  const stores = await prisma.store.findMany({ where: { active: true }, orderBy: { name: "asc" } });
+  const [stores, source] = await Promise.all([
+    prisma.store.findMany({ where: { active: true }, orderBy: { name: "asc" } }),
+    cloneFrom ? prisma.user.findUnique({ where: { id: cloneFrom } }) : Promise.resolve(null),
+  ]);
 
   return (
     <div className="mx-auto max-w-xl">
       <Card>
         <CardHeader>
-          <CardTitle>Novo funcionário</CardTitle>
+          <CardTitle>{source ? `Clonar "${source.name}"` : "Novo funcionário"}</CardTitle>
         </CardHeader>
         <CardContent>
           <form action={createStaffAction} className="flex flex-col gap-4">
             {message && (
               <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
                 {message}
+              </p>
+            )}
+            {source && (
+              <p className="text-xs text-muted-foreground">
+                Papel e unidade copiados de <strong>{source.name}</strong>. Preencha nome, e-mail e senha
+                novos.
               </p>
             )}
             <div className="flex flex-col gap-1.5">
@@ -50,7 +59,7 @@ export default async function NewStaffPage({
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="role">Papel</Label>
-              <Select id="role" name="role" defaultValue="SELLER">
+              <Select id="role" name="role" defaultValue={source?.role ?? "SELLER"}>
                 <option value="SELLER">Vendedor / Consultor de Enxoval</option>
                 <option value="MANAGER">Gerente</option>
                 <option value="ADMIN">Administrador</option>
@@ -58,7 +67,7 @@ export default async function NewStaffPage({
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="storeId">Unidade</Label>
-              <Select id="storeId" name="storeId" defaultValue="">
+              <Select id="storeId" name="storeId" defaultValue={source?.storeId ?? ""}>
                 <option value="">— Não se aplica (Administrador) —</option>
                 {stores.map((store) => (
                   <option key={store.id} value={store.id}>
@@ -73,7 +82,7 @@ export default async function NewStaffPage({
               <Input id="password" name="password" type="password" minLength={6} required />
             </div>
             <Button type="submit" className="mt-2">
-              Salvar funcionário
+              {source ? "Salvar funcionário clonado" : "Salvar funcionário"}
             </Button>
           </form>
         </CardContent>

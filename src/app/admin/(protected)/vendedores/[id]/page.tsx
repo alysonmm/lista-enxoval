@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { requireStaffPage } from "@/lib/auth/current-user";
@@ -42,11 +43,16 @@ export default async function EditStaffPage({
 
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">{staffMember.name}</h1>
-        <p className="text-sm text-muted-foreground">
-          Funcionário desde {formatDateOnly(staffMember.createdAt)}
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">{staffMember.name}</h1>
+          <p className="text-sm text-muted-foreground">
+            Funcionário desde {formatDateOnly(staffMember.createdAt)}
+          </p>
+        </div>
+        <Button asChild variant="outline" size="sm">
+          <Link href={`/admin/vendedores/novo?cloneFrom=${staffMember.id}`}>Clonar este funcionário</Link>
+        </Button>
       </div>
 
       {message && (

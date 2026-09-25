@@ -15,7 +15,8 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
-    "db:create-admin": "tsx prisma/create-admin.ts"
+    "db:create-admin": "tsx prisma/create-admin.ts",
+    "db:assign-default-images": "tsx prisma/assign-default-images.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

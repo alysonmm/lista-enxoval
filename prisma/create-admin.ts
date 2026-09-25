@@ -4,7 +4,10 @@
  * usa bcryptjs direto em vez de @/lib/auth/password (que tem `server-only`).
  *
  * Uso: npx tsx prisma/create-admin.ts <email> <senha> [nome]
+ * (lê DATABASE_URL do .env automaticamente; prefixe DATABASE_URL=... na
+ * frente do comando para rodar contra outro banco, ex.: produção)
  */
+import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { hash } from "bcryptjs";
 

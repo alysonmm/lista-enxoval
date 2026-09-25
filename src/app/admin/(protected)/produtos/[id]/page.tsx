@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { requireStaffPage } from "@/lib/auth/current-user";
@@ -70,9 +71,14 @@ export default async function ProductDetailPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">{product.name}</h1>
-        <p className="text-sm text-muted-foreground">SKU {product.sku}</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">{product.name}</h1>
+          <p className="text-sm text-muted-foreground">SKU {product.sku}</p>
+        </div>
+        <Button asChild variant="outline" size="sm">
+          <Link href={`/admin/produtos/novo?cloneFrom=${product.id}`}>Clonar este produto</Link>
+        </Button>
       </div>
 
       {message && (

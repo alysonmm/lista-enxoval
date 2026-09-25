@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { requireStaffPage } from "@/lib/auth/current-user";
@@ -34,8 +35,11 @@ export default async function EditStorePage({
   return (
     <div className="mx-auto max-w-xl">
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between gap-2">
           <CardTitle>Editar unidade</CardTitle>
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/admin/unidades/nova?cloneFrom=${store.id}`}>Clonar esta unidade</Link>
+          </Button>
         </CardHeader>
         <CardContent>
           <form action={updateWithId} className="flex flex-col gap-4">

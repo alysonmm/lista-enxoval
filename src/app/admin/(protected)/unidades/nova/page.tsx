@@ -1,4 +1,5 @@
 import { requireStaffPage } from "@/lib/auth/current-user";
+import { prisma } from "@/lib/prisma";
 import { createStoreAction } from "@/modules/catalog/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,17 +15,19 @@ const ERROR_MESSAGES: Record<string, string> = {
 export default async function NewStorePage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; cloneFrom?: string }>;
 }) {
   await requireStaffPage(["ADMIN"]);
-  const { error } = await searchParams;
+  const { error, cloneFrom } = await searchParams;
   const message = error ? (ERROR_MESSAGES[error] ?? "Não foi possível salvar.") : null;
+
+  const source = cloneFrom ? await prisma.store.findUnique({ where: { id: cloneFrom } }) : null;
 
   return (
     <div className="mx-auto max-w-xl">
       <Card>
         <CardHeader>
-          <CardTitle>Nova unidade</CardTitle>
+          <CardTitle>{source ? `Clonar "${source.name}"` : "Nova unidade"}</CardTitle>
         </CardHeader>
         <CardContent>
           <form action={createStoreAction} className="flex flex-col gap-4">
@@ -33,9 +36,21 @@ export default async function NewStorePage({
                 {message}
               </p>
             )}
+            {source && (
+              <p className="text-xs text-muted-foreground">
+                Dados copiados de <strong>{source.name}</strong>. Ajuste o nome e defina um código novo (o
+                código não pode se repetir).
+              </p>
+            )}
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="name">Nome</Label>
-              <Input id="name" name="name" required placeholder="Ponto das Crianças — Shopping X" />
+              <Input
+                id="name"
+                name="name"
+                required
+                placeholder="Ponto das Crianças — Shopping X"
+                defaultValue={source ? `${source.name} (cópia)` : ""}
+              />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="code">Código</Label>
@@ -43,18 +58,18 @@ export default async function NewStorePage({
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="address">Endereço</Label>
-              <Input id="address" name="address" />
+              <Input id="address" name="address" defaultValue={source?.address ?? ""} />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="phone">Telefone</Label>
-              <Input id="phone" name="phone" />
+              <Input id="phone" name="phone" defaultValue={source?.phone ?? ""} />
             </div>
             <div className="flex items-center gap-2">
-              <Checkbox id="active" name="active" defaultChecked />
+              <Checkbox id="active" name="active" defaultChecked={source?.active ?? true} />
               <Label htmlFor="active">Unidade ativa</Label>
             </div>
             <Button type="submit" className="mt-2">
-              Salvar unidade
+              {source ? "Salvar unidade clonada" : "Salvar unidade"}
             </Button>
           </form>
         </CardContent>

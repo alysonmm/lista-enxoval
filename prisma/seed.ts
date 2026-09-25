@@ -24,6 +24,28 @@ function slugify(input: string): string {
     .replace(/(^-+|-+$)/g, "");
 }
 
+/** Ícones simples em public/placeholders, um por categoria (ver CATEGORY_SPECS). */
+const CATEGORY_PLACEHOLDER_SLUGS = new Set([
+  "roupas",
+  "saida-de-maternidade",
+  "banho",
+  "quarto",
+  "passeio",
+  "alimentacao",
+  "higiene",
+  "bolsas",
+  "ninhos",
+  "mantas",
+  "acessorios",
+  "moveis",
+  "decoracao",
+]);
+
+function defaultProductImage(categoryName: string): string {
+  const slug = slugify(categoryName);
+  return `/placeholders/${CATEGORY_PLACEHOLDER_SLUGS.has(slug) ? slug : "generico"}.svg`;
+}
+
 function reais(value: number): number {
   return Math.round(value * 100);
 }
@@ -317,7 +339,7 @@ async function seedProducts(categoryMap: Map<string, string>, storeIds: string[]
         brand: "Ponto das Crianças",
         price: reais(spec.price),
         status: "ACTIVE",
-        images: [],
+        images: [defaultProductImage(spec.category)],
       },
     });
 

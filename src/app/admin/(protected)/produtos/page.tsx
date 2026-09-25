@@ -87,6 +87,7 @@ export default async function ProductsPage({
               <TableHead>Preço</TableHead>
               <TableHead>Variações</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -118,11 +119,16 @@ export default async function ProductsPage({
                     {STATUS_LABEL[product.status]}
                   </Badge>
                 </TableCell>
+                <TableCell>
+                  <Button asChild variant="ghost" size="sm">
+                    <Link href={`/admin/produtos/novo?cloneFrom=${product.id}`}>Clonar</Link>
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
             {products.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                <TableCell colSpan={8} className="text-center text-muted-foreground">
                   Nenhum produto encontrado.
                 </TableCell>
               </TableRow>

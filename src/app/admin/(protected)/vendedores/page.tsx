@@ -66,9 +66,12 @@ export default async function StaffPage() {
                     {user.active ? "Ativo" : "Inativo"}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="flex gap-1">
                   <Button asChild variant="ghost" size="sm">
                     <Link href={`/admin/vendedores/${user.id}`}>Editar</Link>
+                  </Button>
+                  <Button asChild variant="ghost" size="sm">
+                    <Link href={`/admin/vendedores/novo?cloneFrom=${user.id}`}>Clonar</Link>
                   </Button>
                 </TableCell>
               </TableRow>

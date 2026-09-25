@@ -4,6 +4,14 @@ Todas as mudanças relevantes do projeto são documentadas neste arquivo, no for
 
 ## [Unreleased]
 
+### Added — clonagem de cadastros e fotos padrão
+
+- **Clonar cadastro**: páginas "novo" de Produtos, Funcionários e Unidades aceitam `?cloneFrom=<id>` e vêm pré-preenchidas com os dados do registro de origem — exceto os campos que precisam ser únicos (SKU, e-mail, código) ou nunca são copiáveis (senha), que ficam em branco para o usuário definir. Link "Clonar" nas listagens e nas páginas de edição dos três cadastros.
+- **Fotos padrão por categoria**: `public/placeholders/` ganhou um ícone simples por categoria (roupas, banho, quarto, passeio, alimentação, higiene, bolsas, ninhos, mantas, acessórios, móveis, decoração, saída de maternidade, + um genérico de fallback). `prisma/assign-default-images.ts` (`npm run db:assign-default-images`) atribui essas fotos a qualquer produto sem imagem — sem sobrescrever quem já tem foto enviada — e o seed já cria produtos novos com a foto da categoria por padrão. Continuam 100% editáveis depois pelo upload já existente (Produtos → editar → trocar imagem).
+- Corrigido de passagem: `prisma/create-admin.ts` e `prisma/assign-default-images.ts` não carregavam `.env` automaticamente quando rodados direto via `tsx` (só via `prisma db seed`/`migrate`, que passam pelo `prisma.config.ts`) — adicionado `import "dotenv/config"` nos dois para funcionarem sozinhos em dev sem precisar prefixar `DATABASE_URL=...` toda vez (continua respeitando um valor prefixado, para apontar a outro banco).
+
+Validado com Playwright contra o Postgres local: fluxo completo de clonagem nos três cadastros (título muda para "Clonar X", campos únicos em branco, demais pré-preenchidos, salvar com sucesso), thumbnails aparecendo na listagem de produtos e na lista pública após rodar `db:assign-default-images` nos 50 produtos existentes. `npm test` (22/22), typecheck, lint e build seguem limpos.
+
 ### Added — preparação para deploy em produção (Vercel)
 
 - **Upload de imagem em produção**: `src/lib/storage.ts` agora usa **Vercel Blob** (`@vercel/blob`) quando `BLOB_READ_WRITE_TOKEN` está definido — necessário porque o filesystem da Vercel é somente leitura fora de `/tmp` e não persiste entre deploys, então a gravação local em `public/uploads` (que funciona em dev) não sobreviveria em produção. Sem o token, continua gravando localmente.

@@ -55,9 +55,12 @@ export default async function StoresPage() {
                     {store.active ? "Ativa" : "Inativa"}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="flex gap-1">
                   <Button asChild variant="ghost" size="sm">
                     <Link href={`/admin/unidades/${store.id}`}>Editar</Link>
+                  </Button>
+                  <Button asChild variant="ghost" size="sm">
+                    <Link href={`/admin/unidades/nova?cloneFrom=${store.id}`}>Clonar</Link>
                   </Button>
                 </TableCell>
               </TableRow>
