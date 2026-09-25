@@ -7,11 +7,16 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
+  // Usada pelo Prisma Client em runtime (o app em produção lê isso direto,
+  // sem passar pelo prisma.config.ts). Conexão com pooler — é o que se
+  // quer para muitas requisições curtas e concorrentes.
   url       = env("DATABASE_URL")
-  // Conexão direta (sem pooler/PgBouncer), usada só por comandos de migration.
-  // Necessária porque o lock consultivo do Postgres que `migrate deploy` usa
-  // não funciona de forma confiável atrás de um pooler em modo transaction
-  // (caso do Neon) — sem isso, migrate trava até estourar o timeout (P1002).
+  // Conexão direta (sem pooler/PgBouncer). Mantida aqui por completude do
+  // schema, mas quem efetivamente comanda a conexão do `migrate deploy`
+  // (incluindo o lock consultivo do Postgres, que não é confiável atrás de
+  // um pooler em modo transaction como o do Neon — sem isso, migrate trava
+  // até estourar em P1002) é o `datasource.url` em prisma.config.ts, que
+  // sobrescreve este bloco inteiro para o CLI.
   directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
