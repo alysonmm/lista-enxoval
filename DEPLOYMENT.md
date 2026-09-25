@@ -100,3 +100,8 @@ Stack de produção: **Vercel** (hosting) + **Neon** (Postgres, via integração
    ```
    Pegue a `DATABASE_URL` em Project Settings → Environment Variables. **Nunca rode `npm run db:seed` em produção** — ele cria dados fictícios (clientes, listas, senha `demo1234`).
 7. **Domínio próprio (quando tiver um)**: Project Settings → Domains → adicionar o domínio e seguir as instruções de DNS mostradas ali; depois, definir `APP_URL` com esse domínio.
+
+### Problemas comuns
+
+- **Importar pela barra de busca/template do topo da tela inicial da Vercel** ("Let's build something new", com um campo de busca + botão Deploy) cria uma **cópia congelada** do repositório num nome novo (ex.: `pdc-lista`), desconectada do repositório original — nenhum commit futuro chega nela. Use sempre **Add New → Project → Import Git Repository → GitHub**, escolhendo o repositório da lista dos seus repositórios reais.
+- **Se o projeto foi criado do jeito errado (acima) e você reconectou o Git depois** (Project Settings → Git → Disconnect/Connect): o botão **Redeploy** de um deployment antigo reexecuta o mesmo commit/fonte daquele deployment específico — ele **não** repuxa a conexão de Git atual. Depois de reconectar o repositório certo, é preciso gerar um **novo** deployment (um push novo na branch conectada, ou "Create Deployment" escolhendo a branch), não um Redeploy de um deployment que já existia antes da reconexão.
