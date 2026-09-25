@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { loginParentAction } from "@/lib/auth/actions";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +57,14 @@ export default async function ParentLoginPage({
           </form>
         </CardContent>
       </Card>
+      <div className="flex flex-col items-center gap-1 text-sm text-muted-foreground">
+        <Link href="/admin/login" className="underline hover:text-foreground">
+          Faz parte da equipe? Acesse o painel da loja
+        </Link>
+        <Link href="/" className="underline hover:text-foreground">
+          ← Voltar
+        </Link>
+      </div>
     </div>
   );
 }
