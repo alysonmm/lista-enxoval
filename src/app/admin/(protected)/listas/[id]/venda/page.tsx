@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { formatCentsToBRL } from "@/lib/money";
 import { registerInStoreSaleAction } from "@/modules/sales/actions";
 import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -231,9 +232,9 @@ export default async function InStoreSalePage({
                 <Textarea id="notes" name="notes" rows={2} />
               </div>
 
-              <Button type="submit" size="lg" className="mt-2 self-start">
+              <SubmitButton size="lg" className="mt-2 self-start">
                 Confirmar venda
-              </Button>
+              </SubmitButton>
             </form>
           </CardContent>
         </Card>

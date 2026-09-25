@@ -18,6 +18,7 @@ import {
   updateGiftListAction,
 } from "@/modules/gift-lists/actions";
 import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -167,21 +168,21 @@ export default async function GiftListDetailPage({
           </Button>
           {(list.status === "DRAFT" || list.status === "PAUSED") && (
             <form action={publishGiftListAction.bind(null, list.id)}>
-              <Button type="submit">Publicar</Button>
+              <SubmitButton>Publicar</SubmitButton>
             </form>
           )}
           {list.status === "ACTIVE" && (
             <form action={pauseGiftListAction.bind(null, list.id)}>
-              <Button type="submit" variant="outline">
+              <SubmitButton variant="outline">
                 Pausar
-              </Button>
+              </SubmitButton>
             </form>
           )}
           {canClose && list.status !== "CLOSED" && list.status !== "CANCELLED" && (
             <form action={closeGiftListAction.bind(null, list.id)}>
-              <Button type="submit" variant="outline">
+              <SubmitButton variant="outline">
                 Encerrar
-              </Button>
+              </SubmitButton>
             </form>
           )}
         </div>
@@ -262,9 +263,9 @@ export default async function GiftListDetailPage({
                   <option value="FATHER">Pai</option>
                   <option value="GUARDIAN">Responsável</option>
                 </Select>
-                <Button type="submit" variant="secondary">
+                <SubmitButton variant="secondary">
                   Adicionar
-                </Button>
+                </SubmitButton>
               </div>
               <p className="text-xs text-muted-foreground">
                 Busque o ID em{" "}
@@ -341,9 +342,9 @@ export default async function GiftListDetailPage({
                 />
                 <Label htmlFor="showGiftValuesToParents">Mostrar valores dos presentes aos pais</Label>
               </div>
-              <Button type="submit" variant="secondary" className="self-start">
+              <SubmitButton variant="secondary" className="self-start">
                 Salvar configurações
-              </Button>
+              </SubmitButton>
             </form>
 
             {session.role === "ADMIN" && list.status !== "CANCELLED" && (
@@ -353,9 +354,9 @@ export default async function GiftListDetailPage({
                 </Label>
                 <div className="flex gap-2">
                   <Input id="reason" name="reason" placeholder="Motivo do cancelamento" className="flex-1" />
-                  <Button type="submit" variant="destructive">
+                  <SubmitButton variant="destructive">
                     Cancelar lista
-                  </Button>
+                  </SubmitButton>
                 </div>
               </form>
             )}
@@ -413,9 +414,9 @@ export default async function GiftListDetailPage({
                           <Link href={`/admin/listas/${list.id}/itens/${item.id}`}>Editar</Link>
                         </Button>
                         <form action={toggleGiftListItemActiveAction.bind(null, list.id, item.id)}>
-                          <Button type="submit" variant="ghost" size="sm">
+                          <SubmitButton variant="ghost" size="sm">
                             {item.active ? "Desativar" : "Ativar"}
-                          </Button>
+                          </SubmitButton>
                         </form>
                       </TableCell>
                     </TableRow>
@@ -462,9 +463,9 @@ export default async function GiftListDetailPage({
               <Label htmlFor="notes">Observação (opcional)</Label>
               <Textarea id="notes" name="notes" rows={2} />
             </div>
-            <Button type="submit" variant="secondary">
+            <SubmitButton variant="secondary">
               Adicionar produto
-            </Button>
+            </SubmitButton>
           </form>
         </CardContent>
       </Card>

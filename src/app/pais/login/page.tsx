@@ -1,5 +1,5 @@
 import { loginParentAction } from "@/lib/auth/actions";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
@@ -49,9 +49,9 @@ export default async function ParentLoginPage({
               <Label htmlFor="password">Senha</Label>
               <PasswordInput id="password" name="password" required autoComplete="current-password" />
             </div>
-            <Button type="submit" className="mt-2">
+            <SubmitButton className="mt-2">
               Entrar
-            </Button>
+            </SubmitButton>
           </form>
         </CardContent>
       </Card>

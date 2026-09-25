@@ -5,6 +5,7 @@ import { requireStaffPage } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { updateStoreAction } from "@/modules/catalog/actions";
 import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -68,9 +69,9 @@ export default async function EditStorePage({
               <Checkbox id="active" name="active" defaultChecked={store.active} />
               <Label htmlFor="active">Unidade ativa</Label>
             </div>
-            <Button type="submit" className="mt-2">
+            <SubmitButton className="mt-2">
               Salvar alterações
-            </Button>
+            </SubmitButton>
           </form>
         </CardContent>
       </Card>

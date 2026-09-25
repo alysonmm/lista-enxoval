@@ -1,7 +1,7 @@
 import { requireStaffPage } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { createCategoryAction } from "@/modules/catalog/actions";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -104,9 +104,9 @@ export default async function CategoriesPage({
                 ))}
               </Select>
             </div>
-            <Button type="submit" className="mt-2">
+            <SubmitButton className="mt-2">
               Adicionar categoria
-            </Button>
+            </SubmitButton>
           </form>
         </CardContent>
       </Card>

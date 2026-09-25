@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { formatDateOnly } from "@/lib/dates";
 import { resetParentPasswordAction, updateCustomerAction } from "@/modules/people/actions";
 import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -137,9 +138,9 @@ export default async function CustomerDetailPage({
                 <Label htmlFor="notes">Observações</Label>
                 <Textarea id="notes" name="notes" rows={2} defaultValue={customer.notes ?? ""} />
               </div>
-              <Button type="submit" className="mt-2 self-start">
+              <SubmitButton className="mt-2 self-start">
                 Salvar alterações
-              </Button>
+              </SubmitButton>
             </form>
           </CardContent>
         </Card>
@@ -159,9 +160,9 @@ export default async function CustomerDetailPage({
                 <Label htmlFor="password">Nova senha</Label>
                 <Input id="password" name="password" type="password" minLength={6} required />
               </div>
-              <Button type="submit" variant="secondary">
+              <SubmitButton variant="secondary">
                 Definir/redefinir senha
-              </Button>
+              </SubmitButton>
             </form>
           </CardContent>
         </Card>

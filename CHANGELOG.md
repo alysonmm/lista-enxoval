@@ -4,6 +4,15 @@ Todas as mudanças relevantes do projeto são documentadas neste arquivo, no for
 
 ## [Unreleased]
 
+### Added — indicadores de carregamento
+
+- **`src/components/ui/submit-button.tsx`**: botão de submit com `useFormStatus()` — mostra um spinner e fica desabilitado enquanto a Server Action do formulário está em andamento. Substituiu `<Button type="submit">` em todos os formulários que chamam uma Server Action (34 ocorrências em 20 páginas — admin, portal dos pais e página pública), deixando de fora só as barras de busca (`method="GET"`), que já ganham feedback via `loading.tsx` (abaixo) por serem navegação normal.
+- **`loading.tsx`** (convenção do Next.js) em `admin/(protected)`, `pais/(protected)`, `lista/[slug]` e na raiz do app: mostra um spinner central automaticamente enquanto a página de destino carrega, sem precisar de nenhum código extra por rota — cobre navegação entre páginas (clicar em "Editar", em um item do menu, etc.).
+
+Sem isso, qualquer clique que disparasse uma Server Action ou uma navegação com busca de dados não dava nenhum retorno visual até terminar, parecendo travado.
+
+Validado com Playwright simulando uma rede lenta (requisições atrasadas propositalmente): botão de login e de criar categoria ficam visivelmente desabilitados com spinner durante o envio; navegação direta para uma página nova mostra "Carregando..." enquanto os dados carregam (cliques em links já pré-carregados pelo Next.js são instantâneos por design — o loading.tsx é a rede de segurança para quando não há pré-carregamento). npm test (22/22), typecheck, lint e build seguem limpos.
+
 ### Added — clonagem de cadastros e fotos padrão
 
 - **Clonar cadastro**: páginas "novo" de Produtos, Funcionários e Unidades aceitam `?cloneFrom=<id>` e vêm pré-preenchidas com os dados do registro de origem — exceto os campos que precisam ser únicos (SKU, e-mail, código) ou nunca são copiáveis (senha), que ficam em branco para o usuário definir. Link "Clonar" nas listagens e nas páginas de edição dos três cadastros.

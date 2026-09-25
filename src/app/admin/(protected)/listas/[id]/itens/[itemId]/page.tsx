@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireStaffPage } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { updateGiftListItemAction } from "@/modules/gift-lists/actions";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -76,9 +76,9 @@ export default async function EditGiftListItemPage({
               <Label htmlFor="notes">Observação</Label>
               <Textarea id="notes" name="notes" rows={2} defaultValue={item.notes ?? ""} />
             </div>
-            <Button type="submit" className="self-start">
+            <SubmitButton className="self-start">
               Salvar
-            </Button>
+            </SubmitButton>
           </form>
         </CardContent>
       </Card>

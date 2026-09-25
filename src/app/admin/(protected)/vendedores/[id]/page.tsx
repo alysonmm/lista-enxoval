@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { formatDateOnly } from "@/lib/dates";
 import { resetStaffPasswordAction, updateStaffAction } from "@/modules/staff/actions";
 import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -109,9 +110,9 @@ export default async function EditStaffPage({
                 Você não pode desativar sua própria conta.
               </p>
             )}
-            <Button type="submit" className="mt-2 self-start">
+            <SubmitButton className="mt-2 self-start">
               Salvar alterações
-            </Button>
+            </SubmitButton>
           </form>
         </CardContent>
       </Card>
@@ -126,9 +127,9 @@ export default async function EditStaffPage({
               <Label htmlFor="password">Nova senha</Label>
               <Input id="password" name="password" type="password" minLength={6} required />
             </div>
-            <Button type="submit" variant="secondary" className="self-start">
+            <SubmitButton variant="secondary" className="self-start">
               Definir/redefinir senha
-            </Button>
+            </SubmitButton>
           </form>
         </CardContent>
       </Card>

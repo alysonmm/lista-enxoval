@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { requireStaffPage } from "@/lib/auth/current-user";
 import { logoutStaffAction } from "@/lib/auth/actions";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { AdminNavLinks } from "./admin-nav";
 import type { StaffRole } from "@prisma/client";
 
@@ -46,9 +46,9 @@ export default async function AdminProtectedLayout({
               <p className="truncate px-1 text-sm font-medium text-foreground">{session.name}</p>
               <p className="px-1 pb-2 text-xs text-muted-foreground">{roleLabel(session.role)}</p>
               <form action={logoutStaffAction}>
-                <Button type="submit" variant="ghost" size="sm" className="w-full justify-start">
+                <SubmitButton variant="ghost" size="sm" className="w-full justify-start">
                   Sair
-                </Button>
+                </SubmitButton>
               </form>
             </div>
           </div>
@@ -69,9 +69,9 @@ export default async function AdminProtectedLayout({
           <p className="truncate px-2 text-sm font-medium text-foreground">{session.name}</p>
           <p className="px-2 pb-2 text-xs text-muted-foreground">{roleLabel(session.role)}</p>
           <form action={logoutStaffAction}>
-            <Button type="submit" variant="ghost" size="sm" className="w-full justify-start">
+            <SubmitButton variant="ghost" size="sm" className="w-full justify-start">
               Sair
-            </Button>
+            </SubmitButton>
           </form>
         </div>
       </aside>

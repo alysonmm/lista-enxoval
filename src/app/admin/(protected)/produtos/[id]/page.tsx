@@ -10,6 +10,7 @@ import {
   updateProductAction,
 } from "@/modules/catalog/actions";
 import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -192,9 +193,9 @@ export default async function ProductDetailPage({
                 <option value="DISCONTINUED">Descontinuado</option>
               </Select>
             </div>
-            <Button type="submit" className="mt-2 self-start">
+            <SubmitButton className="mt-2 self-start">
               Salvar alterações
-            </Button>
+            </SubmitButton>
           </form>
         </CardContent>
       </Card>
@@ -270,9 +271,9 @@ export default async function ProductDetailPage({
               <Checkbox id="variant-active" name="active" defaultChecked />
               <Label htmlFor="variant-active">Variação ativa</Label>
             </div>
-            <Button type="submit" variant="secondary" className="sm:col-span-2 sm:self-start">
+            <SubmitButton variant="secondary" className="sm:col-span-2 sm:self-start">
               Adicionar variação
-            </Button>
+            </SubmitButton>
           </form>
         </CardContent>
       </Card>
@@ -349,9 +350,9 @@ export default async function ProductDetailPage({
                 <Label htmlFor="physicalQuantity">Quantidade física</Label>
                 <Input id="physicalQuantity" name="physicalQuantity" type="number" min="0" required />
               </div>
-              <Button type="submit" variant="secondary">
+              <SubmitButton variant="secondary">
                 Atualizar estoque
-              </Button>
+              </SubmitButton>
             </form>
           </CardContent>
         </Card>

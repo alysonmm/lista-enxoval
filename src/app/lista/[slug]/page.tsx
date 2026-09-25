@@ -7,6 +7,7 @@ import { getPublicGiftListView } from "@/modules/gift-lists/public";
 import { formatCentsToBRL } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export async function generateMetadata({
   params,
@@ -96,7 +97,7 @@ export default async function PublicGiftListPage({
             {view.status === "invalid_pin" && (
               <p className="text-sm text-destructive">PIN incorreto. Tente novamente.</p>
             )}
-            <Button type="submit">Acessar lista</Button>
+            <SubmitButton>Acessar lista</SubmitButton>
           </form>
         </div>
       </div>

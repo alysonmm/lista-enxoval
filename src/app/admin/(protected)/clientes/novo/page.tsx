@@ -1,6 +1,6 @@
 import { requireStaffPage } from "@/lib/auth/current-user";
 import { createParentCustomerAction } from "@/modules/people/actions";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -86,9 +86,9 @@ export default async function NewCustomerPage({
                 Combine essa senha com o cliente — ele poderá trocá-la depois em Configurações.
               </p>
             </div>
-            <Button type="submit" className="mt-2">
+            <SubmitButton className="mt-2">
               Salvar cliente
-            </Button>
+            </SubmitButton>
           </form>
         </CardContent>
       </Card>

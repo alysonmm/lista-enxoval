@@ -1,7 +1,7 @@
 import { requireStaffPage } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { createStaffAction } from "@/modules/staff/actions";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -81,9 +81,9 @@ export default async function NewStaffPage({
               <Label htmlFor="password">Senha de acesso ao painel</Label>
               <Input id="password" name="password" type="password" minLength={6} required />
             </div>
-            <Button type="submit" className="mt-2">
+            <SubmitButton className="mt-2">
               {source ? "Salvar funcionário clonado" : "Salvar funcionário"}
-            </Button>
+            </SubmitButton>
           </form>
         </CardContent>
       </Card>

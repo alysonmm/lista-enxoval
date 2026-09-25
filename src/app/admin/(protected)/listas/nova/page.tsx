@@ -1,7 +1,7 @@
 import { requireStaffPage } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { createGiftListAction } from "@/modules/gift-lists/actions";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -212,9 +212,9 @@ export default async function NewGiftListPage({
           </CardContent>
         </Card>
 
-        <Button type="submit" size="lg" className="self-start">
+        <SubmitButton size="lg" className="self-start">
           Criar lista
-        </Button>
+        </SubmitButton>
       </form>
     </div>
   );

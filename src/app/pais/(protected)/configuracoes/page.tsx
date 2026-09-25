@@ -7,7 +7,7 @@ import {
   updateBabyInfoAction,
   updateParentProfileAction,
 } from "@/modules/gift-lists/parent-actions";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -94,9 +94,9 @@ export default async function ParentSettingsPage({
               <Label htmlFor="city">Cidade</Label>
               <Input id="city" name="city" defaultValue={customer.city ?? ""} />
             </div>
-            <Button type="submit" className="self-start">
+            <SubmitButton className="self-start">
               Salvar dados
-            </Button>
+            </SubmitButton>
           </form>
         </CardContent>
       </Card>
@@ -164,9 +164,9 @@ export default async function ParentSettingsPage({
                 <Label htmlFor="photoUrl">URL da foto (opcional)</Label>
                 <Input id="photoUrl" name="photoUrl" defaultValue={list.baby.photoUrl ?? ""} />
               </div>
-              <Button type="submit" variant="secondary" className="self-start">
+              <SubmitButton variant="secondary" className="self-start">
                 Salvar dados do bebê
-              </Button>
+              </SubmitButton>
             </form>
           </CardContent>
         </Card>
@@ -186,9 +186,9 @@ export default async function ParentSettingsPage({
               <Label htmlFor="newPassword">Nova senha</Label>
               <Input id="newPassword" name="newPassword" type="password" minLength={6} required />
             </div>
-            <Button type="submit" variant="secondary" className="self-start">
+            <SubmitButton variant="secondary" className="self-start">
               Alterar senha
-            </Button>
+            </SubmitButton>
           </form>
         </CardContent>
       </Card>

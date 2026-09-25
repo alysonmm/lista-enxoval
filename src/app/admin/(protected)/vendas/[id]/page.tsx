@@ -9,7 +9,7 @@ import { formatDateTime } from "@/lib/dates";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions";
 import { cancelOrderAction } from "@/modules/sales/actions";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -247,9 +247,9 @@ export default async function OrderDetailPage({
                   <Label htmlFor="reason">Motivo</Label>
                   <Input id="reason" name="reason" required placeholder="Ex.: cliente desistiu" />
                 </div>
-                <Button type="submit" variant="destructive">
+                <SubmitButton variant="destructive">
                   Cancelar venda
-                </Button>
+                </SubmitButton>
               </form>
             </CardContent>
           </Card>

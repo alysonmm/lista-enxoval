@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { requireParentPage } from "@/lib/auth/current-user";
 import { logoutParentAction } from "@/lib/auth/actions";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { ParentNavLinks } from "./parent-nav";
 
 export default async function ParentProtectedLayout({
@@ -25,9 +25,9 @@ export default async function ParentProtectedLayout({
             </div>
           </Link>
           <form action={logoutParentAction}>
-            <Button type="submit" variant="ghost" size="sm">
+            <SubmitButton variant="ghost" size="sm">
               Sair
-            </Button>
+            </SubmitButton>
           </form>
         </div>
         <ParentNavLinks />
