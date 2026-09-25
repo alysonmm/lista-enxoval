@@ -16,7 +16,8 @@ Ver `.env.example` na raiz. Resumo:
 
 | Variável | Uso |
 |---|---|
-| `DATABASE_URL` | Conexão PostgreSQL (Prisma) |
+| `DATABASE_URL` | Conexão PostgreSQL usada em runtime pelo Prisma Client (pode ser via pooler/PgBouncer) |
+| `DATABASE_URL_UNPOOLED` | Conexão direta (sem pooler), usada só por `prisma migrate` (`directUrl` no schema). Bancos como Neon injetam isso automaticamente; em dev local, use o mesmo valor de `DATABASE_URL`. Sem isso, `migrate deploy` pode travar com erro P1002 (lock consultivo não suportado atrás de um pooler em modo transaction). |
 | `AUTH_SECRET` | Segredo de assinatura do JWT de sessão (`src/lib/auth`, via `jose`) |
 | `APP_URL` | URL pública base (usada em links/QR Code/webhooks) |
 | `PAYMENT_PROVIDER` | `manual` (dev/MVP) \| `mercadopago` \| `pagarme` \| `asaas` \| `stripe` (Fase 2) |
@@ -86,7 +87,7 @@ docker run --name lista-enxoval-db -e POSTGRES_PASSWORD=lista_enxoval \
 
 Stack de produção: **Vercel** (hosting) + **Neon** (Postgres, via integração de Storage da própria Vercel) + **Vercel Blob** (imagens de produto). Todos com plano gratuito suficiente para este projeto.
 
-1. **Banco de dados**: no dashboard da Vercel → aba **Storage** → **Create Database** → **Neon (Postgres)**. Conectar ao projeto — isso já injeta `DATABASE_URL` automaticamente nas variáveis de ambiente do projeto.
+1. **Banco de dados**: no dashboard da Vercel → aba **Storage** → **Create Database** → **Neon (Postgres)**. Conectar ao projeto — isso já injeta `DATABASE_URL` (com pooler) e `DATABASE_URL_UNPOOLED` (direta, usada pelas migrations — ver seção 3) automaticamente nas variáveis de ambiente do projeto.
 2. **Storage de imagens**: mesma aba **Storage** → **Create Database** → **Blob**. Conectar ao projeto — injeta `BLOB_READ_WRITE_TOKEN` automaticamente.
 3. **Importar o repositório**: **Add New** → **Project** → selecionar `alysonmm/lista-enxoval` → branch a publicar. A Vercel detecta Next.js automaticamente; não é preciso mexer em build command/output.
 4. **Variáveis de ambiente** (Project Settings → Environment Variables), além das injetadas nos passos 1-2:
