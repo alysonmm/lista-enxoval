@@ -105,6 +105,7 @@ describe("checkout online (carrinho com múltiplos itens)", () => {
       formData.append("quantity", String(line.quantity));
     }
     formData.set("buyerName", overrides.buyerName ?? "Madrinha Coruja");
+    formData.set("buyerEmail", overrides.buyerEmail ?? "madrinha@example.com");
     if (overrides.message !== undefined) formData.set("message", overrides.message);
     if (overrides.hideBuyerFromParents) formData.set("hideBuyerFromParents", "on");
     return formData;

@@ -163,8 +163,8 @@ export function CheckoutForm({
                 <Input id="buyerPhone" name="buyerPhone" />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="buyerEmail">E-mail (opcional)</Label>
-                <Input id="buyerEmail" name="buyerEmail" type="email" />
+                <Label htmlFor="buyerEmail">E-mail</Label>
+                <Input id="buyerEmail" name="buyerEmail" type="email" required />
               </div>
             </div>
 
@@ -204,8 +204,8 @@ export function CheckoutForm({
             </div>
 
             <p className="text-xs text-muted-foreground">
-              O pagamento é finalizado com a nossa equipe — em breve você também poderá pagar
-              direto por aqui, com Pix ou cartão.
+              Depois de confirmar, você paga com cartão de crédito, débito ou Pix numa página
+              segura do Mercado Pago.
             </p>
 
             <SubmitButton size="lg" className="mt-2">

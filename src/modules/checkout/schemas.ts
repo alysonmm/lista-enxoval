@@ -6,7 +6,9 @@ export const checkoutOnlineSchema = z
     quantities: z.array(z.coerce.number().int().min(1)).min(1),
     buyerName: z.string().trim().min(2, "Informe seu nome."),
     buyerPhone: z.string().trim().optional(),
-    buyerEmail: z.union([z.string().trim().email(), z.literal("")]).optional(),
+    // Obrigatório (diferente do cadastro de cliente no admin): o Mercado
+    // Pago exige e-mail do pagador para gerar Pix no Checkout Pro.
+    buyerEmail: z.string().trim().email("Informe um e-mail válido."),
     hideBuyerFromParents: z.boolean().default(false),
     message: z.string().trim().max(2000).optional(),
   })

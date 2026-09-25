@@ -135,7 +135,7 @@ export async function checkoutOnlineAction(slug: string, formData: FormData): Pr
         data: {
           name: data.buyerName,
           phone: data.buyerPhone || null,
-          email: data.buyerEmail || null,
+          email: data.buyerEmail,
         },
       });
 
