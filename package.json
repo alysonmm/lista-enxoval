@@ -16,6 +16,7 @@
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
     "db:create-admin": "tsx prisma/create-admin.ts",
+    "db:reset-password": "tsx prisma/reset-password.ts",
     "db:assign-default-images": "tsx prisma/assign-default-images.ts"
   },
   "dependencies": {
