@@ -5,6 +5,7 @@ import { requireStaffPage } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { formatCentsToBRL } from "@/lib/money";
 import { formatDateOnly, formatDateTime } from "@/lib/dates";
+import { generateQrCodeDataUrl, getPublicListUrl } from "@/lib/qrcode";
 import { encodeProductOption } from "@/modules/gift-lists/schemas";
 import {
   addGiftListItemAction,
@@ -116,6 +117,9 @@ export default async function GiftListDetailPage({
     }),
   ]);
 
+  const publicUrl = getPublicListUrl(list.slug);
+  const qrDataUrl = await generateQrCodeDataUrl(publicUrl);
+
   const canEditMeta = session.role !== "SELLER" || list.consultantId === session.userId;
   const canClose = session.role === "ADMIN";
   const updateWithId = updateGiftListAction.bind(null, list.id);
@@ -181,6 +185,28 @@ export default async function GiftListDetailPage({
       {saved && (
         <p className="rounded-md bg-success/10 px-3 py-2 text-sm text-success">Alterações salvas.</p>
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Link e QR Code</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-wrap items-center gap-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={qrDataUrl} alt="QR Code da lista" className="size-24 shrink-0 rounded-lg border border-border" />
+          <div className="flex min-w-0 flex-1 flex-col gap-2">
+            <div className="truncate rounded-md border border-input bg-muted/40 px-3 py-2 text-sm text-foreground">
+              {publicUrl}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild variant="secondary" size="sm">
+                <a href={qrDataUrl} download={`lista-${list.slug}-qrcode.png`}>
+                  Baixar QR Code
+                </a>
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
