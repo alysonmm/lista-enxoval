@@ -166,9 +166,10 @@ describe("criação de lista e regras de quantidade", () => {
     formData.set("desiredQuantity", "4");
     formData.set("priority", "DESIRED");
 
-    await expect(addGiftListItemAction(giftList.id, formData)).rejects.toThrow(
-      `REDIRECT:/admin/listas/${giftList.id}?saved=1`,
-    );
+    // Sem redirect de propósito: adicionar um produto revalida e permanece
+    // na mesma página (ver addGiftListItemAction), em vez de recarregar a
+    // tela inteira a cada item adicionado.
+    await expect(addGiftListItemAction(giftList.id, formData)).resolves.toBeUndefined();
 
     const items = await prisma.giftListItem.findMany({ where: { giftListId: giftList.id } });
     expect(items).toHaveLength(1);

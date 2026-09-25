@@ -374,8 +374,11 @@ export async function addGiftListItemAction(listId: string, formData: FormData):
     ipAddress: await getClientIp(),
   });
 
+  // Sem redirect: revalida e permanece na mesma página, para que adicionar
+  // um produto atualize só a tabela de itens em vez de recarregar a tela
+  // inteira (que aqui também busca loja, equipe, todos os produtos e gera
+  // o QR Code — um custo alto para repetir a cada item adicionado).
   revalidatePath(`/admin/listas/${listId}`);
-  redirect(`/admin/listas/${listId}?saved=1`);
 }
 
 export async function updateGiftListItemAction(

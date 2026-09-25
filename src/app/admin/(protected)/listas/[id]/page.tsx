@@ -433,7 +433,11 @@ export default async function GiftListDetailPage({
             </Table>
           </div>
 
-          <form action={addItemWithId} className="grid gap-4 sm:grid-cols-4 sm:items-end">
+          <form
+            key={list.items.length}
+            action={addItemWithId}
+            className="grid gap-4 sm:grid-cols-4 sm:items-end"
+          >
             <div className="flex flex-col gap-1.5 sm:col-span-2">
               <Label htmlFor="productOption">Produto</Label>
               <Select id="productOption" name="productOption" required defaultValue="">
