@@ -28,6 +28,8 @@ import {
 const ERROR_MESSAGES: Record<string, string> = {
   invalid_input: "Preencha os campos obrigatórios corretamente.",
   duplicate_sku: "Já existe um produto ou variação com esse SKU/código de barras.",
+  invalid_image_type: "Envie uma imagem JPG, PNG, WEBP ou GIF.",
+  image_too_large: "A imagem deve ter até 5MB.",
 };
 
 function variantLabel(attributes: unknown): string {
@@ -154,9 +156,27 @@ export default async function ProductDetailPage({
                 />
               </div>
             </div>
+            {product.images[0] && (
+              <div className="flex flex-col gap-1.5">
+                <Label>Imagem atual</Label>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={product.images[0]}
+                  alt={product.name}
+                  className="h-32 w-32 rounded-md border border-border object-cover"
+                />
+              </div>
+            )}
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="images">Imagens (uma URL por linha)</Label>
-              <Textarea id="images" name="images" rows={3} defaultValue={product.images.join("\n")} />
+              <Label htmlFor="imageFile">
+                {product.images[0] ? "Trocar imagem do produto" : "Imagem do produto"}
+              </Label>
+              <Input id="imageFile" name="imageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
+              <p className="text-xs text-muted-foreground">JPG, PNG, WEBP ou GIF, até 5MB.</p>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="images">URLs de imagem adicionais (uma por linha, opcional)</Label>
+              <Textarea id="images" name="images" rows={2} defaultValue={product.images.slice(1).join("\n")} />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="status">Status</Label>

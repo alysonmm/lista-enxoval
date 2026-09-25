@@ -14,9 +14,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Prisma } from "@prisma/client";
+import type { GiftListStatus, Prisma } from "@prisma/client";
 
-const STATUS_LABEL: Record<string, string> = {
+const STATUS_LABEL: Record<GiftListStatus, string> = {
   DRAFT: "Rascunho",
   ACTIVE: "Ativa",
   PAUSED: "Pausada",
@@ -35,14 +35,16 @@ const STATUS_VARIANT: Record<string, "success" | "secondary" | "warning" | "dest
 export default async function GiftListsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; status?: string }>;
 }) {
   const session = await requireStaffPage();
-  const { q } = await searchParams;
+  const { q, status } = await searchParams;
+  const validStatus = status && status in STATUS_LABEL ? (status as keyof typeof STATUS_LABEL) : undefined;
 
   const where: Prisma.GiftListWhereInput = {
     deletedAt: null,
     ...(session.role === "SELLER" ? { consultantId: session.userId } : {}),
+    ...(validStatus ? { status: validStatus } : {}),
     ...(q
       ? {
           OR: [
@@ -84,6 +86,16 @@ export default async function GiftListsPage({
           <h1 className="text-2xl font-bold text-foreground">Listas de enxoval</h1>
           <p className="text-sm text-muted-foreground">
             {session.role === "SELLER" ? "Suas listas" : "Todas as listas"}
+            {validStatus && (
+              <>
+                {" · Filtro: "}
+                {STATUS_LABEL[validStatus]}
+                {" · "}
+                <Link href="/admin/listas" className="underline">
+                  limpar filtro
+                </Link>
+              </>
+            )}
           </p>
         </div>
         <Button asChild>

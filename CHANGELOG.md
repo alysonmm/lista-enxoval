@@ -4,6 +4,16 @@ Todas as mudanças relevantes do projeto são documentadas neste arquivo, no for
 
 ## [Unreleased]
 
+### Added — melhorias de UI/UX (feedback pós-deploy local)
+
+- **Upload de imagem de produto**: `src/lib/storage.ts` grava o arquivo em `public/uploads/products` (dev/local; produção deve trocar por S3/R2, ver `DEPLOYMENT.md`). Substitui o antigo "só URL colada" por um `<input type="file">` de verdade nas páginas de novo/editar produto, com thumbnail na listagem e na edição; o campo de URLs continua disponível para imagens adicionais/externas.
+- **Logo da Ponto das Crianças**: adicionada em `public/logo.png` e usada na sidebar do admin, no header do portal dos pais, nas duas telas de login e no topo da página pública da lista (substituindo o ícone genérico).
+- **Menu do admin e do portal dos pais**: itens de navegação ganharam borda visível em repouso/hover e destaque para a página atual (`src/app/admin/(protected)/admin-nav.tsx`, `src/app/pais/(protected)/parent-nav.tsx`) — antes não havia nenhuma distinção visual entre os botões.
+- **Logout inacessível em telas estreitas**: a sidebar do admin é `hidden` abaixo do breakpoint `sm` (640px) e não existia nenhuma alternativa nesse caso — inclusive escondendo o botão "Sair". Adicionado um header mobile com logo + menu (`<details>` nativo, sem JS extra) contendo a navegação e o logout.
+- **Mostrar/ocultar senha**: `src/components/ui/password-input.tsx` (ícone de olho, `lucide-react`) usado nas telas de login do admin e dos pais.
+- **Cards do dashboard clicáveis**: cada indicador agora linka para o relatório correspondente com os mesmos filtros usados no cálculo (`/admin/relatorios?from=...`/`?channel=...` para métricas de venda, `/admin/listas?status=ACTIVE` para listas ativas/valor potencial). Vendedor não acessa `/admin/relatorios` (restrito a ADMIN/MANAGER), então nele os cards de venda linkam para `/admin/vendas`. `/admin/listas` ganhou suporte a `?status=`.
+- **Link de compartilhamento na tela principal dos pais**: a URL pública da lista agora aparece direto em `/pais` (antes só existia dentro de `/pais/compartilhar`), com atalho para a tela completa (link + WhatsApp + QR Code).
+
 ### Added
 
 **Documentação**

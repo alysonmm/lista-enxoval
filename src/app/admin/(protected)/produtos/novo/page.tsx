@@ -11,6 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const ERROR_MESSAGES: Record<string, string> = {
   invalid_input: "Preencha os campos obrigatórios corretamente.",
   duplicate_sku: "Já existe um produto com esse SKU ou código de barras.",
+  invalid_image_type: "Envie uma imagem JPG, PNG, WEBP ou GIF.",
+  image_too_large: "A imagem deve ter até 5MB.",
 };
 
 export default async function NewProductPage({
@@ -88,8 +90,13 @@ export default async function NewProductPage({
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="images">Imagens (uma URL por linha)</Label>
-              <Textarea id="images" name="images" rows={3} placeholder="https://..." />
+              <Label htmlFor="imageFile">Imagem do produto</Label>
+              <Input id="imageFile" name="imageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
+              <p className="text-xs text-muted-foreground">JPG, PNG, WEBP ou GIF, até 5MB.</p>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="images">URLs de imagem adicionais (uma por linha, opcional)</Label>
+              <Textarea id="images" name="images" rows={2} placeholder="https://..." />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="status">Status</Label>

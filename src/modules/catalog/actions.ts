@@ -9,6 +9,7 @@ import { reaisToCents } from "@/lib/money";
 import { slugify } from "@/lib/slug";
 import { getClientIp, getStaffSession } from "@/lib/auth/current-user";
 import { recordAudit } from "@/lib/audit";
+import { saveImageUpload, UploadError } from "@/lib/storage";
 import {
   categorySchema,
   inventoryAdjustmentSchema,
@@ -156,6 +157,18 @@ export async function createProductAction(formData: FormData): Promise<void> {
   if (!parsed.success) redirect("/admin/produtos/novo?error=invalid_input");
 
   const data = parsed.data;
+  const imageFile = formData.get("imageFile");
+  let uploadedImageUrl: string | null = null;
+  if (imageFile instanceof File && imageFile.size > 0) {
+    try {
+      uploadedImageUrl = await saveImageUpload(imageFile, "products");
+    } catch (e) {
+      if (e instanceof UploadError) redirect(`/admin/produtos/novo?error=${e.code}`);
+      throw e;
+    }
+  }
+  const images = [...(uploadedImageUrl ? [uploadedImageUrl] : []), ...parseImagesTextarea(data.images)];
+
   let product;
   try {
     product = await prisma.product.create({
@@ -168,7 +181,7 @@ export async function createProductAction(formData: FormData): Promise<void> {
         brand: data.brand || null,
         price: reaisToCents(data.price),
         promoPrice: data.promoPrice != null ? reaisToCents(data.promoPrice) : null,
-        images: parseImagesTextarea(data.images),
+        images,
         status: data.status,
       },
     });
@@ -208,6 +221,20 @@ export async function updateProductAction(productId: string, formData: FormData)
   if (!parsed.success) redirect(`/admin/produtos/${productId}?error=invalid_input`);
 
   const data = parsed.data;
+  const imageFile = formData.get("imageFile");
+  let uploadedImageUrl: string | null = null;
+  if (imageFile instanceof File && imageFile.size > 0) {
+    try {
+      uploadedImageUrl = await saveImageUpload(imageFile, "products");
+    } catch (e) {
+      if (e instanceof UploadError) redirect(`/admin/produtos/${productId}?error=${e.code}`);
+      throw e;
+    }
+  }
+  const current = await prisma.product.findUnique({ where: { id: productId }, select: { images: true } });
+  const primaryImage = uploadedImageUrl ?? current?.images[0] ?? null;
+  const images = [...(primaryImage ? [primaryImage] : []), ...parseImagesTextarea(data.images)];
+
   try {
     await prisma.product.update({
       where: { id: productId },
@@ -220,7 +247,7 @@ export async function updateProductAction(productId: string, formData: FormData)
         brand: data.brand || null,
         price: reaisToCents(data.price),
         promoPrice: data.promoPrice != null ? reaisToCents(data.promoPrice) : null,
-        images: parseImagesTextarea(data.images),
+        images,
         status: data.status,
       },
     });

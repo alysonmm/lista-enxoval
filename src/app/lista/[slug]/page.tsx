@@ -116,9 +116,8 @@ export default async function PublicGiftListPage({
   return (
     <div className="min-h-screen pb-16">
       <header className="border-b border-border bg-card px-4 py-8 text-center">
-        <p className="mb-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          <Heart className="size-3.5 text-primary" /> Ponto das Crianças
-        </p>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="Ponto das Crianças" className="mx-auto mb-3 size-12 rounded-full" />
         {view.photoUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img

@@ -1,6 +1,7 @@
 import { loginParentAction } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import {
   Card,
@@ -25,7 +26,9 @@ export default async function ParentLoginPage({
   const message = error ? (ERROR_MESSAGES[error] ?? "Não foi possível entrar.") : null;
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/logo.png" alt="Ponto das Crianças" className="size-20 rounded-full shadow-sm" />
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Portal dos pais</CardTitle>
@@ -44,13 +47,7 @@ export default async function ParentLoginPage({
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                required
-                autoComplete="current-password"
-              />
+              <PasswordInput id="password" name="password" required autoComplete="current-password" />
             </div>
             <Button type="submit" className="mt-2">
               Entrar

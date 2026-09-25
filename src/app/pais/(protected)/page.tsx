@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requireParentPage } from "@/lib/auth/current-user";
 import { computeDashboard, getParentPrimaryList } from "@/modules/gift-lists/parent-view";
 import { formatCentsToBRL } from "@/lib/money";
+import { getPublicListUrl } from "@/lib/qrcode";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -22,6 +23,7 @@ export default async function ParentOverviewPage() {
 
   const dashboard = computeDashboard(list);
   const heading = list.baby.nameUndefined ? list.title : `Enxoval da ${list.baby.name ?? ""}`;
+  const publicUrl = getPublicListUrl(list.slug);
 
   return (
     <div className="flex flex-col gap-6">
@@ -31,6 +33,20 @@ export default async function ParentOverviewPage() {
           {list.store.name} · Consultora responsável cuidando de tudo para você
         </p>
       </div>
+
+      <Card>
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+          <div className="min-w-0">
+            <p className="text-xs font-medium uppercase text-muted-foreground">
+              Link da sua lista
+            </p>
+            <p className="truncate text-sm font-medium text-foreground">{publicUrl}</p>
+          </div>
+          <Button asChild size="sm" variant="secondary">
+            <Link href="/pais/compartilhar">Compartilhar</Link>
+          </Button>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>

@@ -42,7 +42,17 @@ export default async function ProductsPage({
           }
         : {}),
     },
-    include: { category: true, _count: { select: { variants: true } } },
+    select: {
+      id: true,
+      name: true,
+      sku: true,
+      price: true,
+      promoPrice: true,
+      status: true,
+      images: true,
+      category: { select: { name: true } },
+      _count: { select: { variants: true } },
+    },
     orderBy: { createdAt: "desc" },
     take: 100,
   });
@@ -70,6 +80,7 @@ export default async function ProductsPage({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead />
               <TableHead>Produto</TableHead>
               <TableHead>SKU</TableHead>
               <TableHead>Categoria</TableHead>
@@ -81,6 +92,18 @@ export default async function ProductsPage({
           <TableBody>
             {products.map((product) => (
               <TableRow key={product.id} className="cursor-pointer">
+                <TableCell>
+                  {product.images[0] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={product.images[0]}
+                      alt=""
+                      className="size-10 rounded-md border border-border object-cover"
+                    />
+                  ) : (
+                    <div className="size-10 rounded-md border border-dashed border-border bg-muted/40" />
+                  )}
+                </TableCell>
                 <TableCell className="font-medium">
                   <Link href={`/admin/produtos/${product.id}`} className="hover:underline">
                     {product.name}
@@ -99,7 +122,7 @@ export default async function ProductsPage({
             ))}
             {products.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                <TableCell colSpan={7} className="text-center text-muted-foreground">
                   Nenhum produto encontrado.
                 </TableCell>
               </TableRow>
