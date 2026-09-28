@@ -45,7 +45,7 @@ export default async function StoresPage() {
           </TableHeader>
           <TableBody>
             {stores.map((store) => (
-              <TableRow key={store.id}>
+              <TableRow key={store.id} className="cursor-pointer">
                 <TableCell className="font-medium">{store.name}</TableCell>
                 <TableCell>{store.code}</TableCell>
                 <TableCell className="text-muted-foreground">{store.address ?? "—"}</TableCell>
@@ -57,9 +57,14 @@ export default async function StoresPage() {
                 </TableCell>
                 <TableCell className="flex gap-1">
                   <Button asChild variant="ghost" size="sm">
-                    <Link href={`/admin/unidades/${store.id}`}>Editar</Link>
+                    <Link
+                      href={`/admin/unidades/${store.id}`}
+                      className="after:absolute after:inset-0 after:content-['']"
+                    >
+                      Editar
+                    </Link>
                   </Button>
-                  <Button asChild variant="ghost" size="sm">
+                  <Button asChild variant="ghost" size="sm" className="relative z-10">
                     <Link href={`/admin/unidades/nova?cloneFrom=${store.id}`}>Clonar</Link>
                   </Button>
                 </TableCell>

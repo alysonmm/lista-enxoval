@@ -106,7 +106,10 @@ export default async function ProductsPage({
                   )}
                 </TableCell>
                 <TableCell className="font-medium">
-                  <Link href={`/admin/produtos/${product.id}`} className="hover:underline">
+                  <Link
+                    href={`/admin/produtos/${product.id}`}
+                    className="after:absolute after:inset-0 after:content-[''] hover:underline"
+                  >
                     {product.name}
                   </Link>
                 </TableCell>
@@ -120,7 +123,7 @@ export default async function ProductsPage({
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Button asChild variant="ghost" size="sm">
+                  <Button asChild variant="ghost" size="sm" className="relative z-10">
                     <Link href={`/admin/produtos/novo?cloneFrom=${product.id}`}>Clonar</Link>
                   </Button>
                 </TableCell>

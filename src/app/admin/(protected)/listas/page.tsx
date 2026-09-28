@@ -128,9 +128,12 @@ export default async function GiftListsPage({
           </TableHeader>
           <TableBody>
             {lists.map((list) => (
-              <TableRow key={list.id}>
+              <TableRow key={list.id} className="cursor-pointer">
                 <TableCell className="font-medium">
-                  <Link href={`/admin/listas/${list.id}`} className="hover:underline">
+                  <Link
+                    href={`/admin/listas/${list.id}`}
+                    className="after:absolute after:inset-0 after:content-[''] hover:underline"
+                  >
                     {list.title}
                   </Link>
                   <p className="text-xs font-normal text-muted-foreground">{list.publicId}</p>

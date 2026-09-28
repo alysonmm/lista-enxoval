@@ -389,7 +389,7 @@ export default async function GiftListDetailPage({
                   const available = item.desiredQuantity - item.purchasedQuantity - item.reservedQuantity;
                   const price = item.variant?.priceOverride ?? item.product.promoPrice ?? item.product.price;
                   return (
-                    <TableRow key={item.id}>
+                    <TableRow key={item.id} className="cursor-pointer">
                       <TableCell className="font-medium">
                         {item.product.name}
                         {variantLabel(item.variant?.attributes)}
@@ -411,10 +411,15 @@ export default async function GiftListDetailPage({
                       </TableCell>
                       <TableCell className="flex gap-1">
                         <Button asChild variant="ghost" size="sm">
-                          <Link href={`/admin/listas/${list.id}/itens/${item.id}`}>Editar</Link>
+                          <Link
+                            href={`/admin/listas/${list.id}/itens/${item.id}`}
+                            className="after:absolute after:inset-0 after:content-['']"
+                          >
+                            Editar
+                          </Link>
                         </Button>
                         <form action={toggleGiftListItemActiveAction.bind(null, list.id, item.id)}>
-                          <SubmitButton variant="ghost" size="sm">
+                          <SubmitButton variant="ghost" size="sm" className="relative z-10">
                             {item.active ? "Desativar" : "Ativar"}
                           </SubmitButton>
                         </form>
@@ -496,7 +501,7 @@ export default async function GiftListDetailPage({
                 {list.orders.map((order) => {
                   const isCancelled = order.paymentStatus === "CANCELLED" || order.paymentStatus === "REFUNDED";
                   return (
-                    <TableRow key={order.id}>
+                    <TableRow key={order.id} className="cursor-pointer">
                       <TableCell className="font-medium">
                         {order.items
                           .map((item) => `${item.product.name}${variantLabel(item.variant?.attributes)}`)
@@ -515,7 +520,12 @@ export default async function GiftListDetailPage({
                       <TableCell className="text-muted-foreground">{formatDateTime(order.createdAt)}</TableCell>
                       <TableCell>
                         <Button asChild variant="ghost" size="sm">
-                          <Link href={`/admin/vendas/${order.id}`}>Ver</Link>
+                          <Link
+                            href={`/admin/vendas/${order.id}`}
+                            className="after:absolute after:inset-0 after:content-['']"
+                          >
+                            Ver
+                          </Link>
                         </Button>
                       </TableCell>
                     </TableRow>

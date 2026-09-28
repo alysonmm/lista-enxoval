@@ -103,9 +103,12 @@ export default async function OrdersPage({
           </TableHeader>
           <TableBody>
             {orders.map((order) => (
-              <TableRow key={order.id}>
+              <TableRow key={order.id} className="cursor-pointer">
                 <TableCell className="font-medium">
-                  <Link href={`/admin/vendas/${order.id}`} className="hover:underline">
+                  <Link
+                    href={`/admin/vendas/${order.id}`}
+                    className="after:absolute after:inset-0 after:content-[''] hover:underline"
+                  >
                     #{order.sequentialNumber.toString().padStart(6, "0")}
                   </Link>
                 </TableCell>

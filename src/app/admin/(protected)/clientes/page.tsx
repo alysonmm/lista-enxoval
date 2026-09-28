@@ -71,9 +71,12 @@ export default async function CustomersPage({
           </TableHeader>
           <TableBody>
             {customers.map((customer) => (
-              <TableRow key={customer.id}>
+              <TableRow key={customer.id} className="cursor-pointer">
                 <TableCell className="font-medium">
-                  <Link href={`/admin/clientes/${customer.id}`} className="hover:underline">
+                  <Link
+                    href={`/admin/clientes/${customer.id}`}
+                    className="after:absolute after:inset-0 after:content-[''] hover:underline"
+                  >
                     {customer.name}
                   </Link>
                 </TableCell>
