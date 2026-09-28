@@ -4,6 +4,7 @@ import { requireStaffPage } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ClickableRow } from "@/components/ui/clickable-row";
 import {
   Table,
   TableBody,
@@ -56,7 +57,7 @@ export default async function StaffPage() {
           </TableHeader>
           <TableBody>
             {staff.map((user) => (
-              <TableRow key={user.id} className="cursor-pointer">
+              <ClickableRow key={user.id} href={`/admin/vendedores/${user.id}`}>
                 <TableCell className="font-medium">{user.name}</TableCell>
                 <TableCell className="text-muted-foreground">{user.email}</TableCell>
                 <TableCell>{ROLE_LABEL[user.role] ?? user.role}</TableCell>
@@ -68,18 +69,13 @@ export default async function StaffPage() {
                 </TableCell>
                 <TableCell className="flex gap-1">
                   <Button asChild variant="ghost" size="sm">
-                    <Link
-                      href={`/admin/vendedores/${user.id}`}
-                      className="after:absolute after:inset-0 after:content-['']"
-                    >
-                      Editar
-                    </Link>
+                    <Link href={`/admin/vendedores/${user.id}`}>Editar</Link>
                   </Button>
-                  <Button asChild variant="ghost" size="sm" className="relative z-10">
+                  <Button asChild variant="ghost" size="sm">
                     <Link href={`/admin/vendedores/novo?cloneFrom=${user.id}`}>Clonar</Link>
                   </Button>
                 </TableCell>
-              </TableRow>
+              </ClickableRow>
             ))}
             {staff.length === 0 && (
               <TableRow>

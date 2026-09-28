@@ -7,6 +7,7 @@ import { formatDateTime } from "@/lib/dates";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ClickableRow } from "@/components/ui/clickable-row";
 import {
   Table,
   TableBody,
@@ -103,12 +104,9 @@ export default async function OrdersPage({
           </TableHeader>
           <TableBody>
             {orders.map((order) => (
-              <TableRow key={order.id} className="cursor-pointer">
+              <ClickableRow key={order.id} href={`/admin/vendas/${order.id}`}>
                 <TableCell className="font-medium">
-                  <Link
-                    href={`/admin/vendas/${order.id}`}
-                    className="after:absolute after:inset-0 after:content-[''] hover:underline"
-                  >
+                  <Link href={`/admin/vendas/${order.id}`} className="hover:underline">
                     #{order.sequentialNumber.toString().padStart(6, "0")}
                   </Link>
                 </TableCell>
@@ -125,7 +123,7 @@ export default async function OrdersPage({
                   </Badge>
                 </TableCell>
                 <TableCell className="text-muted-foreground">{formatDateTime(order.createdAt)}</TableCell>
-              </TableRow>
+              </ClickableRow>
             ))}
             {orders.length === 0 && (
               <TableRow>

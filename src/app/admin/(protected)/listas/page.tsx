@@ -6,6 +6,7 @@ import { formatDateOnly } from "@/lib/dates";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { ClickableRow } from "@/components/ui/clickable-row";
 import {
   Table,
   TableBody,
@@ -128,12 +129,9 @@ export default async function GiftListsPage({
           </TableHeader>
           <TableBody>
             {lists.map((list) => (
-              <TableRow key={list.id} className="cursor-pointer">
+              <ClickableRow key={list.id} href={`/admin/listas/${list.id}`}>
                 <TableCell className="font-medium">
-                  <Link
-                    href={`/admin/listas/${list.id}`}
-                    className="after:absolute after:inset-0 after:content-[''] hover:underline"
-                  >
+                  <Link href={`/admin/listas/${list.id}`} className="hover:underline">
                     {list.title}
                   </Link>
                   <p className="text-xs font-normal text-muted-foreground">{list.publicId}</p>
@@ -147,7 +145,7 @@ export default async function GiftListsPage({
                 <TableCell>
                   <Badge variant={STATUS_VARIANT[list.status]}>{STATUS_LABEL[list.status]}</Badge>
                 </TableCell>
-              </TableRow>
+              </ClickableRow>
             ))}
             {lists.length === 0 && (
               <TableRow>

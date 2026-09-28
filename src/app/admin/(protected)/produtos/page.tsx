@@ -6,6 +6,7 @@ import { formatCentsToBRL } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { ClickableRow } from "@/components/ui/clickable-row";
 import {
   Table,
   TableBody,
@@ -92,7 +93,7 @@ export default async function ProductsPage({
           </TableHeader>
           <TableBody>
             {products.map((product) => (
-              <TableRow key={product.id} className="cursor-pointer">
+              <ClickableRow key={product.id} href={`/admin/produtos/${product.id}`}>
                 <TableCell>
                   {product.images[0] ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -106,10 +107,7 @@ export default async function ProductsPage({
                   )}
                 </TableCell>
                 <TableCell className="font-medium">
-                  <Link
-                    href={`/admin/produtos/${product.id}`}
-                    className="after:absolute after:inset-0 after:content-[''] hover:underline"
-                  >
+                  <Link href={`/admin/produtos/${product.id}`} className="hover:underline">
                     {product.name}
                   </Link>
                 </TableCell>
@@ -123,11 +121,11 @@ export default async function ProductsPage({
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Button asChild variant="ghost" size="sm" className="relative z-10">
+                  <Button asChild variant="ghost" size="sm">
                     <Link href={`/admin/produtos/novo?cloneFrom=${product.id}`}>Clonar</Link>
                   </Button>
                 </TableCell>
-              </TableRow>
+              </ClickableRow>
             ))}
             {products.length === 0 && (
               <TableRow>

@@ -4,6 +4,7 @@ import { requireStaffPage } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ClickableRow } from "@/components/ui/clickable-row";
 import {
   Table,
   TableBody,
@@ -71,12 +72,9 @@ export default async function CustomersPage({
           </TableHeader>
           <TableBody>
             {customers.map((customer) => (
-              <TableRow key={customer.id} className="cursor-pointer">
+              <ClickableRow key={customer.id} href={`/admin/clientes/${customer.id}`}>
                 <TableCell className="font-medium">
-                  <Link
-                    href={`/admin/clientes/${customer.id}`}
-                    className="after:absolute after:inset-0 after:content-[''] hover:underline"
-                  >
+                  <Link href={`/admin/clientes/${customer.id}`} className="hover:underline">
                     {customer.name}
                   </Link>
                 </TableCell>
@@ -85,7 +83,7 @@ export default async function CustomersPage({
                 <TableCell className="text-muted-foreground">
                   {customer.parent?.giftListParents.length ?? 0}
                 </TableCell>
-              </TableRow>
+              </ClickableRow>
             ))}
             {customers.length === 0 && (
               <TableRow>

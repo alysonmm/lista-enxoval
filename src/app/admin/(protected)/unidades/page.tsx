@@ -4,6 +4,7 @@ import { requireStaffPage } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ClickableRow } from "@/components/ui/clickable-row";
 import {
   Table,
   TableBody,
@@ -45,7 +46,7 @@ export default async function StoresPage() {
           </TableHeader>
           <TableBody>
             {stores.map((store) => (
-              <TableRow key={store.id} className="cursor-pointer">
+              <ClickableRow key={store.id} href={`/admin/unidades/${store.id}`}>
                 <TableCell className="font-medium">{store.name}</TableCell>
                 <TableCell>{store.code}</TableCell>
                 <TableCell className="text-muted-foreground">{store.address ?? "—"}</TableCell>
@@ -57,18 +58,13 @@ export default async function StoresPage() {
                 </TableCell>
                 <TableCell className="flex gap-1">
                   <Button asChild variant="ghost" size="sm">
-                    <Link
-                      href={`/admin/unidades/${store.id}`}
-                      className="after:absolute after:inset-0 after:content-['']"
-                    >
-                      Editar
-                    </Link>
+                    <Link href={`/admin/unidades/${store.id}`}>Editar</Link>
                   </Button>
-                  <Button asChild variant="ghost" size="sm" className="relative z-10">
+                  <Button asChild variant="ghost" size="sm">
                     <Link href={`/admin/unidades/nova?cloneFrom=${store.id}`}>Clonar</Link>
                   </Button>
                 </TableCell>
-              </TableRow>
+              </ClickableRow>
             ))}
             {stores.length === 0 && (
               <TableRow>

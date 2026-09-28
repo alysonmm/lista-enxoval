@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ClickableRow } from "@/components/ui/clickable-row";
 import {
   Table,
   TableBody,
@@ -184,12 +185,9 @@ export default async function CustomerDetailPage({
               </TableHeader>
               <TableBody>
                 {lists.map((list) => (
-                  <TableRow key={list.id} className="cursor-pointer">
+                  <ClickableRow key={list.id} href={`/admin/listas/${list.id}`}>
                     <TableCell className="font-medium">
-                      <Link
-                        href={`/admin/listas/${list.id}`}
-                        className="after:absolute after:inset-0 after:content-[''] hover:underline"
-                      >
+                      <Link href={`/admin/listas/${list.id}`} className="hover:underline">
                         {list.title}
                       </Link>
                     </TableCell>
@@ -201,7 +199,7 @@ export default async function CustomerDetailPage({
                         {STATUS_LABEL[list.status]}
                       </Badge>
                     </TableCell>
-                  </TableRow>
+                  </ClickableRow>
                 ))}
                 {lists.length === 0 && (
                   <TableRow>
