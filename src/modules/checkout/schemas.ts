@@ -19,7 +19,7 @@ export const checkoutOnlineSchema = z
 export type CheckoutOnlineInput = z.infer<typeof checkoutOnlineSchema>;
 
 export const generateGiftMessageSchema = z.object({
-  babyName: z.string().trim().optional(),
+  babyName: z.string().trim().nullish(),
   listTitle: z.string().trim().min(1),
   itemNames: z.array(z.string().trim().min(1)).min(1).max(20),
   buyerName: z.string().trim().optional(),
