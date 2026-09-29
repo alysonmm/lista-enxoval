@@ -48,6 +48,26 @@ const PAYMENT_METHOD_LABEL: Record<string, string> = {
   OTHER: "Outra",
 };
 
+const PAYMENT_STATUS_LABEL: Record<string, string> = {
+  PENDING: "Pagamento pendente",
+  PROCESSING: "Pagamento pendente",
+  APPROVED: "Aprovado",
+  REJECTED: "Rejeitado",
+  CANCELLED: "Cancelado",
+  REFUNDED: "Estornado",
+  EXPIRED: "Expirado",
+};
+
+const PAYMENT_STATUS_VARIANT: Record<string, "success" | "secondary" | "destructive" | "warning"> = {
+  PENDING: "warning",
+  PROCESSING: "warning",
+  APPROVED: "success",
+  REJECTED: "destructive",
+  CANCELLED: "destructive",
+  REFUNDED: "secondary",
+  EXPIRED: "secondary",
+};
+
 function variantLabel(attributes: unknown): string {
   if (!attributes || typeof attributes !== "object") return "";
   const parts = Object.values(attributes as Record<string, string>).filter(Boolean);
@@ -108,8 +128,8 @@ export default async function OrderDetailPage({
           <h1 className="text-2xl font-bold text-foreground">
             Pedido #{order.sequentialNumber.toString().padStart(6, "0")}
           </h1>
-          <Badge variant={isCancelled ? "destructive" : isPending ? "warning" : "success"}>
-            {isCancelled ? "Cancelado" : isPending ? "Pagamento pendente" : "Aprovado"}
+          <Badge variant={PAYMENT_STATUS_VARIANT[order.paymentStatus]}>
+            {PAYMENT_STATUS_LABEL[order.paymentStatus]}
           </Badge>
         </div>
         <p className="text-sm text-muted-foreground">

@@ -56,6 +56,26 @@ const PRIORITY_LABEL: Record<string, string> = {
   ESSENTIAL: "Item essencial",
 };
 
+const PAYMENT_STATUS_LABEL: Record<string, string> = {
+  PENDING: "Pendente",
+  PROCESSING: "Processando",
+  APPROVED: "Aprovado",
+  REJECTED: "Rejeitado",
+  CANCELLED: "Cancelado",
+  REFUNDED: "Estornado",
+  EXPIRED: "Expirado",
+};
+
+const PAYMENT_STATUS_VARIANT: Record<string, "success" | "secondary" | "destructive" | "warning"> = {
+  PENDING: "warning",
+  PROCESSING: "warning",
+  APPROVED: "success",
+  REJECTED: "destructive",
+  CANCELLED: "destructive",
+  REFUNDED: "secondary",
+  EXPIRED: "secondary",
+};
+
 const ERROR_MESSAGES: Record<string, string> = {
   invalid_input: "Preencha os campos obrigatórios corretamente.",
   missing_pin: "Informe um PIN de acesso para listas protegidas por PIN.",
@@ -495,7 +515,6 @@ export default async function GiftListDetailPage({
               </TableHeader>
               <TableBody>
                 {list.orders.map((order) => {
-                  const isCancelled = order.paymentStatus === "CANCELLED" || order.paymentStatus === "REFUNDED";
                   return (
                     <ClickableRow key={order.id} href={`/admin/vendas/${order.id}`}>
                       <TableCell className="font-medium">
@@ -509,8 +528,8 @@ export default async function GiftListDetailPage({
                       </TableCell>
                       <TableCell>{formatCentsToBRL(order.total)}</TableCell>
                       <TableCell>
-                        <Badge variant={isCancelled ? "destructive" : "success"}>
-                          {isCancelled ? "Cancelado" : "Aprovado"}
+                        <Badge variant={PAYMENT_STATUS_VARIANT[order.paymentStatus]}>
+                          {PAYMENT_STATUS_LABEL[order.paymentStatus]}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">{formatDateTime(order.createdAt)}</TableCell>
