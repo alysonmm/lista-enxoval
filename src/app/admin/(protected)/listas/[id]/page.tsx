@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { requireStaffPage } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { formatCentsToBRL } from "@/lib/money";
-import { formatDateOnly, formatDateTime } from "@/lib/dates";
+import { formatDateOnly } from "@/lib/dates";
 import { generateQrCodeDataUrl, getPublicListUrl } from "@/lib/qrcode";
 import { encodeProductOption } from "@/modules/gift-lists/schemas";
 import {
@@ -35,6 +35,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SalesHistoryTable, type SalesHistoryRow } from "@/components/admin/sales-history-table";
 
 const STATUS_LABEL: Record<string, string> = {
   DRAFT: "Rascunho",
@@ -54,26 +55,6 @@ const PRIORITY_LABEL: Record<string, string> = {
   NORMAL: "Normal",
   DESIRED: "Escolha dos pais",
   ESSENTIAL: "Item essencial",
-};
-
-const PAYMENT_STATUS_LABEL: Record<string, string> = {
-  PENDING: "Pendente",
-  PROCESSING: "Processando",
-  APPROVED: "Aprovado",
-  REJECTED: "Rejeitado",
-  CANCELLED: "Cancelado",
-  REFUNDED: "Estornado",
-  EXPIRED: "Expirado",
-};
-
-const PAYMENT_STATUS_VARIANT: Record<string, "success" | "secondary" | "destructive" | "warning"> = {
-  PENDING: "warning",
-  PROCESSING: "warning",
-  APPROVED: "success",
-  REJECTED: "destructive",
-  CANCELLED: "destructive",
-  REFUNDED: "secondary",
-  EXPIRED: "secondary",
 };
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -165,6 +146,20 @@ export default async function GiftListDetailPage({
           },
         ],
   );
+
+  const salesHistoryRows: SalesHistoryRow[] = list.orders.map((order) => ({
+    id: order.id,
+    productSummary: order.items
+      .map((item) => `${item.product.name}${variantLabel(item.variant?.attributes)}`)
+      .join(", "),
+    quantity: order.items.reduce((sum, item) => sum + item.quantity, 0),
+    buyerName: order.hideBuyerFromParents
+      ? `${order.buyer.name} (anônimo p/ os pais)`
+      : order.buyer.name,
+    total: order.total,
+    paymentStatus: order.paymentStatus,
+    createdAt: order.createdAt.toISOString(),
+  }));
 
   return (
     <div className="flex flex-col gap-6">
@@ -500,57 +495,7 @@ export default async function GiftListDetailPage({
           <CardTitle>Histórico de vendas</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-lg border border-border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Produto</TableHead>
-                  <TableHead>Qtd.</TableHead>
-                  <TableHead>Comprador</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Data</TableHead>
-                  <TableHead />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {list.orders.map((order) => {
-                  return (
-                    <ClickableRow key={order.id} href={`/admin/vendas/${order.id}`}>
-                      <TableCell className="font-medium">
-                        {order.items
-                          .map((item) => `${item.product.name}${variantLabel(item.variant?.attributes)}`)
-                          .join(", ")}
-                      </TableCell>
-                      <TableCell>{order.items.reduce((sum, item) => sum + item.quantity, 0)}</TableCell>
-                      <TableCell>
-                        {order.hideBuyerFromParents ? `${order.buyer.name} (anônimo p/ os pais)` : order.buyer.name}
-                      </TableCell>
-                      <TableCell>{formatCentsToBRL(order.total)}</TableCell>
-                      <TableCell>
-                        <Badge variant={PAYMENT_STATUS_VARIANT[order.paymentStatus]}>
-                          {PAYMENT_STATUS_LABEL[order.paymentStatus]}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{formatDateTime(order.createdAt)}</TableCell>
-                      <TableCell>
-                        <Button asChild variant="ghost" size="sm">
-                          <Link href={`/admin/vendas/${order.id}`}>Ver</Link>
-                        </Button>
-                      </TableCell>
-                    </ClickableRow>
-                  );
-                })}
-                {list.orders.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground">
-                      Nenhuma venda registrada ainda para esta lista.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <SalesHistoryTable listTitle={list.title} rows={salesHistoryRows} />
         </CardContent>
       </Card>
     </div>

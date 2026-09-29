@@ -81,3 +81,21 @@ body {
     scrollbar-width: none;
   }
 }
+
+/* Exportar PDF: ao clicar, o botão marca <body> com essa classe e chama
+   window.print(); isso esconde tudo, menos a seção marcada com
+   data-print-target. Dentro dela, elementos com data-print-hide (filtros,
+   coluna de ações) continuam ocultos — precisa de mais especificidade que a
+   regra de revert acima, senão ela ganha por vir depois na cascata. */
+@media print {
+  body.print-scope * {
+    display: none !important;
+  }
+  body.print-scope [data-print-target],
+  body.print-scope [data-print-target] * {
+    display: revert !important;
+  }
+  body.print-scope [data-print-target] [data-print-hide] {
+    display: none !important;
+  }
+}
