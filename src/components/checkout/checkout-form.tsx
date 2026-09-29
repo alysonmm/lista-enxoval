@@ -12,7 +12,6 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
@@ -194,13 +193,6 @@ export function CheckoutForm({
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Escreva uma mensagem carinhosa ou gere uma automaticamente..."
               />
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Checkbox id="hideBuyerFromParents" name="hideBuyerFromParents" />
-              <Label htmlFor="hideBuyerFromParents">
-                Presentear anonimamente (pais não verão o nome)
-              </Label>
             </div>
 
             <p className="text-xs text-muted-foreground">
