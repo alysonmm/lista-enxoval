@@ -84,12 +84,19 @@ body {
 
 /* Exportar PDF: ao clicar, o botão marca <body> com essa classe e chama
    window.print(); isso esconde tudo, menos a seção marcada com
-   data-print-target. Dentro dela, elementos com data-print-hide (filtros,
-   coluna de ações) continuam ocultos — precisa de mais especificidade que a
-   regra de revert acima, senão ela ganha por vir depois na cascata. */
+   data-print-target. Um elemento com display:none nunca renderiza os
+   descendentes dele, mesmo que o próprio descendente tenha display revertido
+   — por isso os ANCESTRAIS do alvo (:has) também precisam ser revertidos,
+   não só o alvo e o que está dentro dele. Elementos com data-print-hide
+   (filtros, coluna de ações) continuam ocultos mesmo dentro do alvo —
+   precisa de mais especificidade que a regra de revert, senão ela ganha por
+   vir depois na cascata. */
 @media print {
   body.print-scope * {
     display: none !important;
+  }
+  body.print-scope *:has([data-print-target]) {
+    display: revert !important;
   }
   body.print-scope [data-print-target],
   body.print-scope [data-print-target] * {
