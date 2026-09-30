@@ -7,6 +7,7 @@ import type { GiftList } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/password";
 import { getClientIp, getStaffSession, type StaffSessionPayload } from "@/lib/auth/current-user";
+import { confirmMasterAdminPassword } from "@/lib/auth/confirm-admin-password";
 import { recordAudit } from "@/lib/audit";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions";
 import { generatePublicId, generateUniqueGiftListSlug } from "@/lib/slug";
@@ -286,6 +287,29 @@ export async function cancelGiftListAction(listId: string, formData: FormData): 
 
   revalidatePath(`/admin/listas/${listId}`);
   redirect(`/admin/listas/${listId}?saved=1`);
+}
+
+export async function deleteGiftListAction(listId: string, formData: FormData): Promise<void> {
+  const session = await requireStaff();
+  if (session.role !== "ADMIN") redirect(`/admin/listas/${listId}?error=forbidden`);
+
+  const confirmPassword = formData.get("confirmPassword");
+  const confirmed =
+    typeof confirmPassword === "string" && (await confirmMasterAdminPassword(confirmPassword));
+  if (!confirmed) redirect(`/admin/listas/${listId}?error=invalid_confirm_password`);
+
+  await prisma.giftList.update({ where: { id: listId }, data: { deletedAt: new Date() } });
+
+  await recordAudit({
+    actorUserId: session.userId,
+    action: "gift_list.delete",
+    entityType: "GiftList",
+    entityId: listId,
+    ipAddress: await getClientIp(),
+  });
+
+  revalidatePath("/admin/listas");
+  redirect("/admin/listas?deleted=1");
 }
 
 // ---------------------------------------------------------------------------

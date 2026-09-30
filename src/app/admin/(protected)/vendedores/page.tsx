@@ -20,8 +20,13 @@ const ROLE_LABEL: Record<string, string> = {
   SELLER: "Vendedor / Consultor de Enxoval",
 };
 
-export default async function StaffPage() {
+export default async function StaffPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ deleted?: string }>;
+}) {
   await requireStaffPage(["ADMIN"]);
+  const { deleted } = await searchParams;
 
   const staff = await prisma.user.findMany({
     where: { deletedAt: null },
@@ -42,6 +47,12 @@ export default async function StaffPage() {
           <Link href="/admin/vendedores/novo">Novo funcionário</Link>
         </Button>
       </div>
+
+      {deleted && (
+        <p className="rounded-md bg-success/10 px-3 py-2 text-sm text-success">
+          Funcionário excluído.
+        </p>
+      )}
 
       <div className="rounded-lg border border-border bg-card">
         <Table>

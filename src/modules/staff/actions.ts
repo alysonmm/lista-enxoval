@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/password";
 import { getClientIp, getStaffSession } from "@/lib/auth/current-user";
+import { confirmMasterAdminPassword, MASTER_ADMIN_EMAIL } from "@/lib/auth/confirm-admin-password";
 import { recordAudit } from "@/lib/audit";
 import { staffPasswordSchema, staffSchema } from "./schemas";
 
@@ -135,4 +136,39 @@ export async function resetStaffPasswordAction(staffId: string, formData: FormDa
   });
 
   redirect(`/admin/vendedores/${staffId}?saved=1`);
+}
+
+export async function deleteStaffAction(staffId: string, formData: FormData): Promise<void> {
+  const session = await requireAdmin();
+
+  if (staffId === session.userId) {
+    redirect(`/admin/vendedores/${staffId}?error=cannot_delete_self`);
+  }
+
+  const target = await prisma.user.findUnique({ where: { id: staffId } });
+  if (!target || target.deletedAt) redirect("/admin/vendedores?error=not_found");
+  if (target.email === MASTER_ADMIN_EMAIL) {
+    redirect(`/admin/vendedores/${staffId}?error=cannot_delete_master_admin`);
+  }
+
+  const confirmPassword = formData.get("confirmPassword");
+  const confirmed =
+    typeof confirmPassword === "string" && (await confirmMasterAdminPassword(confirmPassword));
+  if (!confirmed) redirect(`/admin/vendedores/${staffId}?error=invalid_confirm_password`);
+
+  await prisma.user.update({
+    where: { id: staffId },
+    data: { deletedAt: new Date(), active: false },
+  });
+
+  await recordAudit({
+    actorUserId: session.userId,
+    action: "staff.delete",
+    entityType: "User",
+    entityId: staffId,
+    ipAddress: await getClientIp(),
+  });
+
+  revalidatePath("/admin/vendedores");
+  redirect("/admin/vendedores?deleted=1");
 }

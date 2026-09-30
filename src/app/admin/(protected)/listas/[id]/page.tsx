@@ -12,14 +12,17 @@ import {
   addGiftListParentAction,
   cancelGiftListAction,
   closeGiftListAction,
+  deleteGiftListAction,
   pauseGiftListAction,
   publishGiftListAction,
   toggleGiftListItemActiveAction,
   updateGiftListAction,
 } from "@/modules/gift-lists/actions";
+import { MASTER_ADMIN_EMAIL } from "@/lib/auth/confirm-admin-password";
 import { Button } from "@/components/ui/button";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -65,6 +68,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   customer_not_found: "Cliente não encontrado. Cadastre-o antes em Clientes.",
   duplicate_parent: "Esse cliente já é responsável por esta lista.",
   not_found: "Item não encontrado.",
+  invalid_confirm_password: `Senha de ${MASTER_ADMIN_EMAIL} incorreta. Exclusão não realizada.`,
 };
 
 function variantLabel(attributes: unknown): string {
@@ -103,7 +107,7 @@ export default async function GiftListDetailPage({
       },
     },
   });
-  if (!list) notFound();
+  if (!list || list.deletedAt) notFound();
   if (session.role === "SELLER" && list.consultantId !== session.userId) notFound();
 
   const [stores, staff, products] = await Promise.all([
@@ -129,6 +133,7 @@ export default async function GiftListDetailPage({
   const addParentWithId = addGiftListParentAction.bind(null, list.id);
   const addItemWithId = addGiftListItemAction.bind(null, list.id);
   const cancelWithId = cancelGiftListAction.bind(null, list.id);
+  const deleteWithId = deleteGiftListAction.bind(null, list.id);
 
   const productOptions = products.flatMap((product) =>
     product.variants.length > 0
@@ -376,6 +381,30 @@ export default async function GiftListDetailPage({
                 </div>
               </form>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {canClose && (
+        <Card className="border-destructive/30">
+          <CardHeader>
+            <CardTitle className="text-destructive">Excluir lista</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form action={deleteWithId} className="flex flex-col gap-3">
+              <p className="text-sm text-muted-foreground">
+                Remove esta lista do painel e da página pública. O histórico de vendas já
+                registrado continua em Vendas, para fins de registro. Para confirmar, informe a
+                senha de {MASTER_ADMIN_EMAIL}.
+              </p>
+              <div className="flex flex-col gap-1.5 sm:max-w-xs">
+                <Label htmlFor="confirmPassword">Senha de {MASTER_ADMIN_EMAIL}</Label>
+                <PasswordInput id="confirmPassword" name="confirmPassword" required />
+              </div>
+              <SubmitButton variant="destructive" className="self-start">
+                Excluir lista definitivamente
+              </SubmitButton>
+            </form>
           </CardContent>
         </Card>
       )}

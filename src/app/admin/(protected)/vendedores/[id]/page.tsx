@@ -4,10 +4,12 @@ import { notFound } from "next/navigation";
 import { requireStaffPage } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { formatDateOnly } from "@/lib/dates";
-import { resetStaffPasswordAction, updateStaffAction } from "@/modules/staff/actions";
+import { deleteStaffAction, resetStaffPasswordAction, updateStaffAction } from "@/modules/staff/actions";
+import { MASTER_ADMIN_EMAIL } from "@/lib/auth/confirm-admin-password";
 import { Button } from "@/components/ui/button";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,6 +20,9 @@ const ERROR_MESSAGES: Record<string, string> = {
   duplicate: "Já existe um funcionário com esse e-mail.",
   invalid_password: "Informe uma senha com pelo menos 6 caracteres.",
   cannot_deactivate_self: "Você não pode desativar sua própria conta.",
+  cannot_delete_self: "Você não pode excluir sua própria conta.",
+  cannot_delete_master_admin: "Esta conta não pode ser excluída.",
+  invalid_confirm_password: `Senha de ${MASTER_ADMIN_EMAIL} incorreta. Exclusão não realizada.`,
 };
 
 export default async function EditStaffPage({
@@ -40,7 +45,9 @@ export default async function EditStaffPage({
 
   const updateWithId = updateStaffAction.bind(null, staffMember.id);
   const resetPasswordWithId = resetStaffPasswordAction.bind(null, staffMember.id);
+  const deleteWithId = deleteStaffAction.bind(null, staffMember.id);
   const isSelf = staffMember.id === session.userId;
+  const isMasterAdmin = staffMember.email === MASTER_ADMIN_EMAIL;
 
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-6">
@@ -133,6 +140,29 @@ export default async function EditStaffPage({
           </form>
         </CardContent>
       </Card>
+
+      {!isSelf && !isMasterAdmin && (
+        <Card className="border-destructive/30">
+          <CardHeader>
+            <CardTitle className="text-destructive">Excluir funcionário</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form action={deleteWithId} className="flex flex-col gap-3">
+              <p className="text-sm text-muted-foreground">
+                Remove este funcionário do sistema. Para confirmar, informe a senha de{" "}
+                {MASTER_ADMIN_EMAIL}.
+              </p>
+              <div className="flex flex-col gap-1.5 sm:max-w-xs">
+                <Label htmlFor="confirmPassword">Senha de {MASTER_ADMIN_EMAIL}</Label>
+                <PasswordInput id="confirmPassword" name="confirmPassword" required />
+              </div>
+              <SubmitButton variant="destructive" className="self-start">
+                Excluir funcionário definitivamente
+              </SubmitButton>
+            </form>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

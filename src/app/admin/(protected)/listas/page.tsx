@@ -36,10 +36,10 @@ const STATUS_VARIANT: Record<string, "success" | "secondary" | "warning" | "dest
 export default async function GiftListsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; deleted?: string }>;
 }) {
   const session = await requireStaffPage();
-  const { q, status } = await searchParams;
+  const { q, status, deleted } = await searchParams;
   const validStatus = status && status in STATUS_LABEL ? (status as keyof typeof STATUS_LABEL) : undefined;
 
   const where: Prisma.GiftListWhereInput = {
@@ -103,6 +103,10 @@ export default async function GiftListsPage({
           <Link href="/admin/listas/nova">Nova lista</Link>
         </Button>
       </div>
+
+      {deleted && (
+        <p className="rounded-md bg-success/10 px-3 py-2 text-sm text-success">Lista excluída.</p>
+      )}
 
       <form method="GET" className="flex max-w-sm gap-2">
         <Input

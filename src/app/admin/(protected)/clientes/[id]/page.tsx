@@ -65,7 +65,7 @@ export default async function CustomerDetailPage({
 
   const updateWithId = updateCustomerAction.bind(null, customer.id);
   const resetPasswordWithId = resetParentPasswordAction.bind(null, customer.id);
-  const lists = customer.parent?.giftListParents.map((gp) => gp.giftList) ?? [];
+  const lists = customer.parent?.giftListParents.map((gp) => gp.giftList).filter((list) => !list.deletedAt) ?? [];
 
   return (
     <div className="flex flex-col gap-6">
