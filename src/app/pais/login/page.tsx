@@ -30,7 +30,11 @@ export default async function ParentLoginPage({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/logo.png" alt="Ponto das Crianças" className="size-20 rounded-full shadow-sm" />
+      <img
+        src="/logo-lista-enxoval.webp"
+        alt="Lista de Enxoval — Ponto das Crianças"
+        className="h-auto w-64"
+      />
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Portal dos pais</CardTitle>
