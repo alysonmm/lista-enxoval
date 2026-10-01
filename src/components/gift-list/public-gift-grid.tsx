@@ -127,20 +127,16 @@ export function PublicGiftGrid({
               ))}
             </Select>
           </div>
-          <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:flex-1">
-            <span className="text-xs text-muted-foreground" aria-live="polite">
-              {filteredItems.length} {filteredItems.length === 1 ? "presente" : "presentes"}
-            </span>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={!hasFilters}
-              onClick={() => applyFilters("", "")}
-            >
-              Limpar filtros
-            </Button>
-          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="w-full sm:ml-auto sm:w-auto"
+            disabled={!hasFilters}
+            onClick={() => applyFilters("", "")}
+          >
+            Limpar filtros
+          </Button>
         </div>
       </div>
 
