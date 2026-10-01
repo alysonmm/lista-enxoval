@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Heart, ImageOff } from "lucide-react";
+import { ImageOff } from "lucide-react";
 import type { Metadata } from "next";
 
 import { getPublicGiftListView } from "@/modules/gift-lists/public";
@@ -83,7 +83,14 @@ export default async function PublicGiftListPage({
     return (
       <div className="flex min-h-screen flex-col items-center justify-center px-6">
         <div className="w-full max-w-xs text-center">
-          <Heart className="mx-auto mb-4 size-8 text-primary" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo-lista-enxoval.webp"
+            alt="Lista de Enxoval — Ponto das Crianças"
+            width={1851}
+            height={850}
+            className="mx-auto mb-4 h-auto w-44"
+          />
           <h1 className="text-lg font-bold text-foreground">Lista protegida</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Digite o PIN que você recebeu para ver esta lista de presentes.
@@ -118,7 +125,13 @@ export default async function PublicGiftListPage({
     <div className="min-h-screen pb-16">
       <header className="border-b border-border bg-card px-4 py-8 text-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" alt="Ponto das Crianças" className="mx-auto mb-3 size-12 rounded-full" />
+        <img
+          src="/logo-lista-enxoval.webp"
+          alt="Lista de Enxoval — Ponto das Crianças"
+          width={1851}
+          height={850}
+          className="mx-auto mb-4 h-auto w-48 sm:w-56"
+        />
         {view.photoUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
