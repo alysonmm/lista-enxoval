@@ -43,6 +43,40 @@ function field(formData: FormData, key: string): string {
   return typeof value === "string" ? value : "";
 }
 
+/**
+ * Monta os itens de todo o catálogo ativo para uma lista — um item por
+ * variação ativa, ou por produto quando não há variação (mesmo recorte que
+ * o seletor manual de "Adicionar produto" oferece). `excludeKeys` evita
+ * duplicar itens já existentes na lista.
+ */
+function buildAllProductsItemsData(
+  products: Array<{ id: string; variants: Array<{ id: string }> }>,
+  listId: string,
+  excludeKeys?: Set<string>,
+): Prisma.GiftListItemCreateManyInput[] {
+  const itemsData: Prisma.GiftListItemCreateManyInput[] = [];
+  for (const product of products) {
+    if (product.variants.length > 0) {
+      for (const variant of product.variants) {
+        const key = `${product.id}::${variant.id}`;
+        if (excludeKeys?.has(key)) continue;
+        itemsData.push({
+          giftListId: listId,
+          productId: product.id,
+          variantId: variant.id,
+          desiredQuantity: 1,
+          priority: "NORMAL",
+        });
+      }
+    } else {
+      const key = `${product.id}::`;
+      if (excludeKeys?.has(key)) continue;
+      itemsData.push({ giftListId: listId, productId: product.id, desiredQuantity: 1, priority: "NORMAL" });
+    }
+  }
+  return itemsData;
+}
+
 // ---------------------------------------------------------------------------
 // Criação (bebê + responsável + lista, em uma transação)
 // ---------------------------------------------------------------------------
@@ -148,31 +182,12 @@ export async function createGiftListAction(formData: FormData): Promise<void> {
       },
     });
 
-    // Toda lista nova já nasce com o catálogo inteiro — um item por produto
-    // sem variação, um item por variação para produtos com variações
-    // (mesmo recorte que o seletor manual de "Adicionar produto" oferece).
+    // Toda lista nova já nasce com o catálogo inteiro.
     const products = await tx.product.findMany({
       where: { deletedAt: null, status: "ACTIVE" },
       include: { variants: { where: { active: true } } },
     });
-    const itemsData: Prisma.GiftListItemCreateManyInput[] = products.flatMap((product) =>
-      product.variants.length > 0
-        ? product.variants.map((variant) => ({
-            giftListId: list.id,
-            productId: product.id,
-            variantId: variant.id,
-            desiredQuantity: 1,
-            priority: "NORMAL" as const,
-          }))
-        : [
-            {
-              giftListId: list.id,
-              productId: product.id,
-              desiredQuantity: 1,
-              priority: "NORMAL" as const,
-            },
-          ],
-    );
+    const itemsData = buildAllProductsItemsData(products, list.id);
     if (itemsData.length > 0) {
       await tx.giftListItem.createMany({ data: itemsData });
     }
@@ -396,6 +411,42 @@ export async function addGiftListParentAction(listId: string, formData: FormData
 // ---------------------------------------------------------------------------
 // Itens da lista
 // ---------------------------------------------------------------------------
+
+/** Completa uma lista já existente com os produtos do catálogo que ainda não estão nela. */
+export async function addAllProductsToListAction(listId: string): Promise<void> {
+  const session = await requireStaff();
+  await requireListAccess(listId, session);
+
+  const [products, existingItems] = await Promise.all([
+    prisma.product.findMany({
+      where: { deletedAt: null, status: "ACTIVE" },
+      include: { variants: { where: { active: true } } },
+    }),
+    prisma.giftListItem.findMany({
+      where: { giftListId: listId },
+      select: { productId: true, variantId: true },
+    }),
+  ]);
+  const existingKeys = new Set(existingItems.map((item) => `${item.productId}::${item.variantId ?? ""}`));
+  const itemsData = buildAllProductsItemsData(products, listId, existingKeys);
+
+  if (itemsData.length > 0) {
+    await prisma.giftListItem.createMany({ data: itemsData });
+  }
+
+  await recordAudit({
+    actorUserId: session.userId,
+    action: "gift_list.add_all_products",
+    entityType: "GiftList",
+    entityId: listId,
+    changes: { addedCount: itemsData.length },
+    ipAddress: await getClientIp(),
+  });
+
+  // Sem redirect, mesmo padrão de addGiftListItemAction: revalida e
+  // permanece na página em vez de recarregar a tela inteira.
+  revalidatePath(`/admin/listas/${listId}`);
+}
 
 export async function addGiftListItemAction(listId: string, formData: FormData): Promise<void> {
   const session = await requireStaff();

@@ -8,6 +8,7 @@ import { formatDateOnly } from "@/lib/dates";
 import { generateQrCodeDataUrl, getPublicListUrl } from "@/lib/qrcode";
 import { encodeProductOption } from "@/modules/gift-lists/schemas";
 import {
+  addAllProductsToListAction,
   addGiftListItemAction,
   addGiftListParentAction,
   cancelGiftListAction,
@@ -134,6 +135,7 @@ export default async function GiftListDetailPage({
   const addItemWithId = addGiftListItemAction.bind(null, list.id);
   const cancelWithId = cancelGiftListAction.bind(null, list.id);
   const deleteWithId = deleteGiftListAction.bind(null, list.id);
+  const addAllProductsWithId = addAllProductsToListAction.bind(null, list.id);
 
   const productOptions = products.flatMap((product) =>
     product.variants.length > 0
@@ -440,8 +442,13 @@ export default async function GiftListDetailPage({
       )}
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex-row items-center justify-between gap-4">
           <CardTitle>Produtos da lista</CardTitle>
+          <form action={addAllProductsWithId}>
+            <SubmitButton variant="outline" size="sm">
+              Adicionar todos os produtos
+            </SubmitButton>
+          </form>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           <div className="rounded-lg border border-border">
