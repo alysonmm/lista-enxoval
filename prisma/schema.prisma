@@ -375,6 +375,8 @@ model GiftList {
   eventDate               DateTime?          @map("event_date")
   showPublicProgress      Boolean            @default(false) @map("show_public_progress")
   showGiftValuesToParents Boolean            @default(false) @map("show_gift_values_to_parents")
+  minPriceCents           Int?               @map("min_price_cents")
+  maxPriceCents           Int?               @map("max_price_cents")
   createdById             String?            @map("created_by")
   createdBy               User?              @relation("ListCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   closedAt                DateTime?          @map("closed_at")

@@ -363,6 +363,36 @@ export default async function GiftListDetailPage({
                 />
                 <Label htmlFor="showGiftValuesToParents">Mostrar valores dos presentes aos pais</Label>
               </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="minPrice">Valor mínimo dos presentes (opcional)</Label>
+                  <Input
+                    id="minPrice"
+                    name="minPrice"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="Ex.: 10,00"
+                    defaultValue={list.minPriceCents != null ? (list.minPriceCents / 100).toFixed(2) : ""}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="maxPrice">Valor máximo dos presentes (opcional)</Label>
+                  <Input
+                    id="maxPrice"
+                    name="maxPrice"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="Ex.: 1000,00"
+                    defaultValue={list.maxPriceCents != null ? (list.maxPriceCents / 100).toFixed(2) : ""}
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Só presentes dentro dessa faixa de valor aparecem na página pública da lista.
+                Deixe em branco para não limitar.
+              </p>
               <SubmitButton variant="secondary" className="self-start">
                 Salvar configurações
               </SubmitButton>

@@ -73,7 +73,17 @@ export async function getPublicGiftListView(slug: string, pin?: string): Promise
 
   const readOnly = list.status === "PAUSED" || list.status === "CLOSED";
 
-  const items: PublicGiftListItem[] = list.items.map((item) => {
+  // Itens fora da faixa de preço da lista (quando configurada) não entram
+  // na página pública nem no cálculo de progresso — a faixa define o que
+  // efetivamente chega ao comprador, não só uma exibição cosmética.
+  const visibleItems = list.items.filter((item) => {
+    const price = item.variant?.priceOverride ?? item.product.promoPrice ?? item.product.price;
+    if (list.minPriceCents != null && price < list.minPriceCents) return false;
+    if (list.maxPriceCents != null && price > list.maxPriceCents) return false;
+    return true;
+  });
+
+  const items: PublicGiftListItem[] = visibleItems.map((item) => {
     const availableInList = item.desiredQuantity - item.purchasedQuantity - item.reservedQuantity;
     let canPurchase = !readOnly && availableInList > 0;
     if (canPurchase && item.variant) {
@@ -97,8 +107,8 @@ export async function getPublicGiftListView(slug: string, pin?: string): Promise
 
   let progressPercent: number | null = null;
   if (list.showPublicProgress) {
-    const totalDesired = list.items.reduce((sum, i) => sum + i.desiredQuantity, 0);
-    const totalPurchased = list.items.reduce((sum, i) => sum + i.purchasedQuantity, 0);
+    const totalDesired = visibleItems.reduce((sum, i) => sum + i.desiredQuantity, 0);
+    const totalPurchased = visibleItems.reduce((sum, i) => sum + i.purchasedQuantity, 0);
     progressPercent = totalDesired > 0 ? Math.round((totalPurchased / totalDesired) * 100) : 0;
   }
 

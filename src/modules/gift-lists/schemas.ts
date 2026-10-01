@@ -41,15 +41,22 @@ export const updateGiftListItemSchema = z.object({
   notes: z.string().trim().optional(),
 });
 
-export const updateGiftListSchema = z.object({
-  title: z.string().trim().min(3, "Informe um título para a lista."),
-  storeId: z.string().trim().min(1),
-  consultantId: z.string().trim().min(1),
-  visibility: visibilityEnum,
-  accessPin: z.string().trim().optional(),
-  showPublicProgress: z.boolean().default(false),
-  showGiftValuesToParents: z.boolean().default(false),
-});
+export const updateGiftListSchema = z
+  .object({
+    title: z.string().trim().min(3, "Informe um título para a lista."),
+    storeId: z.string().trim().min(1),
+    consultantId: z.string().trim().min(1),
+    visibility: visibilityEnum,
+    accessPin: z.string().trim().optional(),
+    showPublicProgress: z.boolean().default(false),
+    showGiftValuesToParents: z.boolean().default(false),
+    minPrice: z.coerce.number().min(0).optional().nullable(),
+    maxPrice: z.coerce.number().min(0).optional().nullable(),
+  })
+  .refine((data) => data.minPrice == null || data.maxPrice == null || data.maxPrice >= data.minPrice, {
+    message: "O valor máximo deve ser maior ou igual ao valor mínimo.",
+    path: ["maxPrice"],
+  });
 
 /** Um option value de item combina produto e variação: "<productId>::<variantId|>" */
 export function encodeProductOption(productId: string, variantId?: string | null): string {

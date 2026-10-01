@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import type { GiftList } from "@prisma/client";
+import type { GiftList, Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/password";
@@ -10,6 +10,7 @@ import { getClientIp, getStaffSession, type StaffSessionPayload } from "@/lib/au
 import { confirmMasterAdminPassword } from "@/lib/auth/confirm-admin-password";
 import { recordAudit } from "@/lib/audit";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions";
+import { reaisToCents } from "@/lib/money";
 import { generatePublicId, generateUniqueGiftListSlug } from "@/lib/slug";
 import { toOptionalDate } from "@/modules/people/schemas";
 import {
@@ -132,7 +133,7 @@ export async function createGiftListAction(formData: FormData): Promise<void> {
     const slug = await generateUniqueGiftListSlug(data.title);
     const publicId = generatePublicId(babyName);
 
-    return tx.giftList.create({
+    const list = await tx.giftList.create({
       data: {
         publicId,
         slug,
@@ -146,6 +147,37 @@ export async function createGiftListAction(formData: FormData): Promise<void> {
         parents: { create: { parentId, relationship: data.relationship, isPrimary: true } },
       },
     });
+
+    // Toda lista nova já nasce com o catálogo inteiro — um item por produto
+    // sem variação, um item por variação para produtos com variações
+    // (mesmo recorte que o seletor manual de "Adicionar produto" oferece).
+    const products = await tx.product.findMany({
+      where: { deletedAt: null, status: "ACTIVE" },
+      include: { variants: { where: { active: true } } },
+    });
+    const itemsData: Prisma.GiftListItemCreateManyInput[] = products.flatMap((product) =>
+      product.variants.length > 0
+        ? product.variants.map((variant) => ({
+            giftListId: list.id,
+            productId: product.id,
+            variantId: variant.id,
+            desiredQuantity: 1,
+            priority: "NORMAL" as const,
+          }))
+        : [
+            {
+              giftListId: list.id,
+              productId: product.id,
+              desiredQuantity: 1,
+              priority: "NORMAL" as const,
+            },
+          ],
+    );
+    if (itemsData.length > 0) {
+      await tx.giftListItem.createMany({ data: itemsData });
+    }
+
+    return list;
   });
 
   await recordAudit({
@@ -177,6 +209,8 @@ export async function updateGiftListAction(listId: string, formData: FormData): 
     accessPin: field(formData, "accessPin") || undefined,
     showPublicProgress: formData.get("showPublicProgress") === "on",
     showGiftValuesToParents: formData.get("showGiftValuesToParents") === "on",
+    minPrice: field(formData, "minPrice") || undefined,
+    maxPrice: field(formData, "maxPrice") || undefined,
   });
   if (!parsed.success) redirect(`/admin/listas/${listId}?error=invalid_input`);
   const data = parsed.data;
@@ -194,6 +228,8 @@ export async function updateGiftListAction(listId: string, formData: FormData): 
       accessPin: data.visibility === "PIN_PROTECTED" ? data.accessPin : null,
       showPublicProgress: data.showPublicProgress,
       showGiftValuesToParents: data.showGiftValuesToParents,
+      minPriceCents: data.minPrice != null ? reaisToCents(data.minPrice) : null,
+      maxPriceCents: data.maxPrice != null ? reaisToCents(data.maxPrice) : null,
     },
   });
 

@@ -176,6 +176,12 @@ export async function cleanupParent(parentId: string) {
 }
 
 export async function cleanupProduct(productId: string) {
+  // createGiftListAction agora adiciona todo o catálogo ativo a cada lista
+  // nova — então qualquer lista criada durante os testes (inclusive de
+  // outros arquivos, rodando contra o mesmo banco) pode ter referenciado
+  // este produto de teste. Limpa esses itens primeiro, não só os que este
+  // teste criou explicitamente.
+  await prisma.giftListItem.deleteMany({ where: { productId } });
   await prisma.inventory.deleteMany({ where: { productVariant: { productId } } });
   await prisma.productVariant.deleteMany({ where: { productId } });
   await prisma.product.delete({ where: { id: productId } });
