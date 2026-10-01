@@ -31,6 +31,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClickableRow } from "@/components/ui/clickable-row";
+import { CopyButton } from "@/components/ui/copy-button";
 import {
   Table,
   TableBody,
@@ -71,6 +72,43 @@ const ERROR_MESSAGES: Record<string, string> = {
   not_found: "Item não encontrado.",
   invalid_confirm_password: `Senha de ${MASTER_ADMIN_EMAIL} incorreta. Exclusão não realizada.`,
 };
+
+/**
+ * Explica, no card do link, quando o link público não vai abrir (ou abre só
+ * para consulta) — sem isso, um link de lista em rascunho parece quebrado
+ * (404) para quem testa ou compartilha antes de publicar.
+ */
+function publicLinkNotice(list: {
+  status: string;
+  visibility: string;
+  accessPin: string | null;
+}): { tone: "warning" | "info"; text: string } | null {
+  if (list.status === "DRAFT") {
+    return {
+      tone: "warning",
+      text: "Esta lista ainda é um rascunho: o link e o QR Code só funcionam depois que você clicar em Publicar.",
+    };
+  }
+  if (list.status === "CANCELLED") {
+    return { tone: "warning", text: "Esta lista foi cancelada: o link e o QR Code não abrem mais." };
+  }
+  if (list.visibility === "PRIVATE") {
+    return {
+      tone: "warning",
+      text: "A visibilidade desta lista está como Privada: o link e o QR Code não abrem para os convidados. Altere em Visibilidade, nas configurações abaixo.",
+    };
+  }
+  if (list.status === "PAUSED" || list.status === "CLOSED") {
+    return {
+      tone: "info",
+      text: `Lista ${list.status === "PAUSED" ? "pausada" : "encerrada"}: os convidados abrem o link e veem os produtos, mas não conseguem presentear.`,
+    };
+  }
+  if (list.visibility === "PIN_PROTECTED" && list.accessPin) {
+    return { tone: "info", text: `Os convidados vão precisar do PIN ${list.accessPin} para abrir a lista.` };
+  }
+  return null;
+}
 
 function variantLabel(attributes: unknown): string {
   if (!attributes || typeof attributes !== "object") return "";
@@ -127,6 +165,7 @@ export default async function GiftListDetailPage({
 
   const publicUrl = getPublicListUrl(list.slug);
   const qrDataUrl = await generateQrCodeDataUrl(publicUrl);
+  const linkNotice = publicLinkNotice(list);
 
   const canEditMeta = session.role !== "SELLER" || list.consultantId === session.userId;
   const canClose = session.role === "ADMIN";
@@ -223,6 +262,17 @@ export default async function GiftListDetailPage({
           <CardTitle>Link e QR Code</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap items-center gap-4">
+          {linkNotice && (
+            <p
+              className={
+                linkNotice.tone === "warning"
+                  ? "w-full rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground"
+                  : "w-full rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground"
+              }
+            >
+              {linkNotice.text}
+            </p>
+          )}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={qrDataUrl} alt="QR Code da lista" className="size-24 shrink-0 rounded-lg border border-border" />
           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -230,6 +280,7 @@ export default async function GiftListDetailPage({
               {publicUrl}
             </div>
             <div className="flex flex-wrap gap-2">
+              <CopyButton value={publicUrl} size="sm" />
               <Button asChild variant="secondary" size="sm">
                 <a href={qrDataUrl} download={`lista-${list.slug}-qrcode.png`}>
                   Baixar QR Code

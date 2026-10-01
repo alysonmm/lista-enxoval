@@ -3,6 +3,7 @@ import { getParentPrimaryList } from "@/modules/gift-lists/parent-view";
 import { generateQrCodeDataUrl, getPublicListUrl } from "@/lib/qrcode";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { CopyButton } from "@/components/ui/copy-button";
 
 export default async function SharePage() {
   const session = await requireParentPage();
@@ -35,19 +36,23 @@ export default async function SharePage() {
           <CardTitle>Link da lista</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
-          <div className="rounded-md border border-input bg-muted/40 px-3 py-2 text-sm text-foreground">
+          {list.status === "DRAFT" && (
+            <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground">
+              Sua lista ainda não foi publicada pela loja: o link e o QR Code vão funcionar assim que
+              ela for publicada. Fale com sua consultora.
+            </p>
+          )}
+          <div className="break-all rounded-md border border-input bg-muted/40 px-3 py-2 text-sm text-foreground">
             {url}
           </div>
           <div className="flex flex-wrap gap-2">
+            <CopyButton value={url} variant="secondary" />
             <Button asChild>
               <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
                 Compartilhar no WhatsApp
               </a>
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Dica: toque e segure o link acima para copiá-lo, ou use o botão do WhatsApp.
-          </p>
         </CardContent>
       </Card>
 
