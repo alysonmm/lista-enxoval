@@ -10,6 +10,10 @@
 import { PrismaClient, type BabySex, type ParentRelationship } from "@prisma/client";
 import { hash } from "bcryptjs";
 
+// Foto real de cada produto do catálogo de demonstração (public/produtos),
+// com a origem de cada imagem (Pixabay, licença de uso livre).
+import productPhotos from "./product-photos.json";
+
 const prisma = new PrismaClient();
 
 const DEMO_PASSWORD = "demo1234";
@@ -44,6 +48,13 @@ const CATEGORY_PLACEHOLDER_SLUGS = new Set([
 function defaultProductImage(categoryName: string): string {
   const slug = slugify(categoryName);
   return `/placeholders/${CATEGORY_PLACEHOLDER_SLUGS.has(slug) ? slug : "generico"}.svg`;
+}
+
+const PRODUCT_PHOTOS: Record<string, { file: string }> = productPhotos;
+
+/** Foto do produto quando existe uma para o nome; senão, o ícone da categoria. */
+function productImage(spec: { name: string; category: string }): string {
+  return PRODUCT_PHOTOS[spec.name]?.file ?? defaultProductImage(spec.category);
 }
 
 function reais(value: number): number {
@@ -339,7 +350,7 @@ async function seedProducts(categoryMap: Map<string, string>, storeIds: string[]
         brand: "Ponto das Crianças",
         price: reais(spec.price),
         status: "ACTIVE",
-        images: [defaultProductImage(spec.category)],
+        images: [productImage(spec)],
       },
     });
 

@@ -1,6 +1,8 @@
 /**
- * Atribui uma foto padrão (ícone por categoria em public/placeholders) a
- * todo produto que ainda não tem nenhuma imagem — útil para produtos criados
+ * Atribui uma foto padrão a todo produto que ainda não tem nenhuma imagem:
+ * a foto real do produto (public/produtos, ver prisma/product-photos.json)
+ * quando existe uma para o nome dele, senão o ícone da categoria
+ * (public/placeholders) — útil para produtos criados
  * antes do upload de imagem existir. Nunca sobrescreve produtos que já têm
  * foto (enviada ou herdada do seed). Continuam editáveis normalmente depois
  * (Produtos → editar → trocar imagem).
@@ -11,6 +13,8 @@
  */
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
+
+import productPhotos from "./product-photos.json";
 
 const prisma = new PrismaClient();
 
@@ -45,10 +49,12 @@ function defaultProductImage(categoryName: string): string {
   return `/placeholders/${CATEGORY_PLACEHOLDER_SLUGS.has(slug) ? slug : "generico"}.svg`;
 }
 
+const PRODUCT_PHOTOS: Record<string, { file: string }> = productPhotos;
+
 async function main() {
   const products = await prisma.product.findMany({
     where: { images: { isEmpty: true } },
-    select: { id: true, category: { select: { name: true } } },
+    select: { id: true, name: true, category: { select: { name: true } } },
   });
 
   if (products.length === 0) {
@@ -59,7 +65,7 @@ async function main() {
   for (const product of products) {
     await prisma.product.update({
       where: { id: product.id },
-      data: { images: [defaultProductImage(product.category.name)] },
+      data: { images: [PRODUCT_PHOTOS[product.name]?.file ?? defaultProductImage(product.category.name)] },
     });
   }
 
