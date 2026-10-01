@@ -1,9 +1,10 @@
 /**
  * Checkout online (carrinho com múltiplos itens): cobre o caminho feliz de
  * um pedido com um item, um pedido com vários itens diferentes no mesmo
- * carrinho, e a mesma proteção de concorrência da venda presencial (seções
- * 54/56) — duas disputas simultâneas pela última unidade nunca podem ambas
- * ser aprovadas.
+ * carrinho, a compra além da quantidade desejada (o item continua à venda)
+ * e a mesma proteção de concorrência da venda presencial (seções 54/56) —
+ * duas disputas simultâneas pela última unidade em estoque nunca podem
+ * ambas ser aprovadas.
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -156,7 +157,20 @@ describe("checkout online (carrinho com múltiplos itens)", () => {
     expect(itemB.purchasedQuantity).toBe(2);
   });
 
-  it("aprova exatamente um dos dois checkouts simultâneos pela última unidade", async () => {
+  it("permite presentear além da quantidade desejada (o item não sai da lista)", async () => {
+    // happyItem: desejado 3, já comprado 1 no primeiro teste — 5 a mais
+    // ultrapassam o desejado e ainda assim o pedido é criado.
+    const redirectUrl = await helpers.expectRedirect(
+      checkoutOnlineAction(slug, buildForm([{ itemId: happyItemId, quantity: 5 }])),
+    );
+    expect(redirectUrl).toMatch(new RegExp(`^/lista/${slug}/checkout/pagamento\\?order=`));
+
+    const updatedItem = await prisma.giftListItem.findUniqueOrThrow({ where: { id: happyItemId } });
+    expect(updatedItem.purchasedQuantity).toBe(6);
+    expect(updatedItem.desiredQuantity).toBe(3);
+  });
+
+  it("aprova exatamente um dos dois checkouts simultâneos pela última unidade em estoque", async () => {
     const results = await Promise.allSettled([
       checkoutOnlineAction(slug, buildForm([{ itemId: raceItemId, quantity: 1 }])),
       checkoutOnlineAction(slug, buildForm([{ itemId: raceItemId, quantity: 1 }])),

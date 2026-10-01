@@ -510,7 +510,13 @@ export async function updateGiftListItemAction(
 
   const current = await prisma.giftListItem.findUnique({ where: { id: itemId } });
   if (!current) redirect(`/admin/listas/${listId}?error=not_found`);
-  if (data.desiredQuantity < current.purchasedQuantity + current.reservedQuantity) {
+  // Reduzir a quantidade desejada só é permitido até o já comprado +
+  // reservado. Como o item continua à venda depois de atingir o desejado,
+  // ele pode ter sido comprado além disso — nesse caso manter (ou aumentar)
+  // o valor atual continua permitido, para não travar a edição de
+  // prioridade/observação.
+  const minDesired = Math.min(current.desiredQuantity, current.purchasedQuantity + current.reservedQuantity);
+  if (data.desiredQuantity < minDesired) {
     redirect(`/admin/listas/${listId}?error=invalid_input`);
   }
 

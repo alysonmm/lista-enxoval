@@ -27,7 +27,6 @@ const ERROR_MESSAGES: Record<string, string> = {
   invalid_input: "Preencha os campos obrigatórios corretamente.",
   item_not_found: "Produto não encontrado nesta lista.",
   list_not_active: "Esta lista não está ativa no momento.",
-  exceeds_list_quantity: "Quantidade solicitada acima do que ainda falta para esse item.",
   out_of_stock: "Estoque insuficiente nesta unidade para essa quantidade.",
 };
 
@@ -71,10 +70,9 @@ export default async function InStoreSalePage({
     );
   }
 
-  const sellableItems = list.items.filter((item) => {
-    const available = item.desiredQuantity - item.purchasedQuantity - item.reservedQuantity;
-    return item.active && available > 0;
-  });
+  // Itens que já atingiram a quantidade desejada continuam vendáveis — só o
+  // estoque da unidade (checado na action) limita a venda.
+  const sellableItems = list.items.filter((item) => item.active);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -102,13 +100,13 @@ export default async function InStoreSalePage({
                   <TableHead>Desejado</TableHead>
                   <TableHead>Comprado</TableHead>
                   <TableHead>Reservado</TableHead>
-                  <TableHead>Disponível</TableHead>
+                  <TableHead>Restante</TableHead>
                   <TableHead>Preço</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {list.items.map((item) => {
-                  const available = item.desiredQuantity - item.purchasedQuantity - item.reservedQuantity;
+                  const remaining = item.desiredQuantity - item.purchasedQuantity - item.reservedQuantity;
                   const price = item.variant?.priceOverride ?? item.product.promoPrice ?? item.product.price;
                   return (
                     <TableRow key={item.id}>
@@ -119,8 +117,8 @@ export default async function InStoreSalePage({
                       <TableCell>{item.desiredQuantity}</TableCell>
                       <TableCell>{item.purchasedQuantity}</TableCell>
                       <TableCell className="text-muted-foreground">{item.reservedQuantity}</TableCell>
-                      <TableCell className={available <= 0 ? "text-muted-foreground" : "font-medium"}>
-                        {Math.max(available, 0)}
+                      <TableCell className={remaining <= 0 ? "text-muted-foreground" : "font-medium"}>
+                        {Math.max(remaining, 0)}
                       </TableCell>
                       <TableCell>{formatCentsToBRL(price)}</TableCell>
                     </TableRow>
@@ -134,7 +132,7 @@ export default async function InStoreSalePage({
 
       {sellableItems.length === 0 ? (
         <p className="text-center text-muted-foreground">
-          Todos os produtos desta lista já foram totalmente presenteados.
+          Esta lista não tem produtos ativos para vender.
         </p>
       ) : (
         <Card>

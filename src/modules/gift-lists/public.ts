@@ -84,8 +84,10 @@ export async function getPublicGiftListView(slug: string, pin?: string): Promise
   });
 
   const items: PublicGiftListItem[] = visibleItems.map((item) => {
-    const availableInList = item.desiredQuantity - item.purchasedQuantity - item.reservedQuantity;
-    let canPurchase = !readOnly && availableInList > 0;
+    // Atingir a quantidade desejada não bloqueia a compra: o item continua
+    // disponível para outros convidados. Só deixa de ser comprável quando a
+    // lista não aceita mais presentes ou quando a variação está sem estoque.
+    let canPurchase = !readOnly;
     if (canPurchase && item.variant) {
       const totalStock = item.variant.inventory.reduce(
         (sum, inv) => sum + Math.max(inv.physicalQuantity - inv.reservedQuantity, 0),
@@ -107,9 +109,14 @@ export async function getPublicGiftListView(slug: string, pin?: string): Promise
 
   let progressPercent: number | null = null;
   if (list.showPublicProgress) {
+    // Compras além do desejado não contam a mais: o progresso mede quanto do
+    // que os pais pediram já foi presenteado e nunca passa de 100%.
     const totalDesired = visibleItems.reduce((sum, i) => sum + i.desiredQuantity, 0);
-    const totalPurchased = visibleItems.reduce((sum, i) => sum + i.purchasedQuantity, 0);
-    progressPercent = totalDesired > 0 ? Math.round((totalPurchased / totalDesired) * 100) : 0;
+    const totalFulfilled = visibleItems.reduce(
+      (sum, i) => sum + Math.min(i.purchasedQuantity, i.desiredQuantity),
+      0,
+    );
+    progressPercent = totalDesired > 0 ? Math.round((totalFulfilled / totalDesired) * 100) : 0;
   }
 
   return {

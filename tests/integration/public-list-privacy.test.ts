@@ -135,14 +135,46 @@ describe("privacidade da página pública da lista", () => {
     assertNoQuantityLeak(view);
   });
 
-  it("nunca inclui campos de quantidade quando o item já foi totalmente presenteado", async () => {
-    const list = await buildList({ purchased: DESIRED - RESERVED }); // availableInList = 0
+  it("item que já atingiu a quantidade desejada continua disponível, sem expor quantidades", async () => {
+    const list = await buildList({ purchased: DESIRED }); // comprado = desejado
     const view = await getPublicGiftListView(list.slug);
 
     expect(view.status).toBe("ok");
     if (view.status !== "ok") throw new Error("unreachable");
-    expect(view.items[0].canPurchase).toBe(false);
+    expect(view.items[0].canPurchase).toBe(true);
     assertNoQuantityLeak(view);
+  });
+
+  it("item sem estoque fica indisponível, sem expor quantidades", async () => {
+    const list = await buildList({ purchased: 0 });
+    await prisma.inventory.updateMany({
+      where: { storeId, productVariantId: variantId },
+      data: { physicalQuantity: 0 },
+    });
+    try {
+      const view = await getPublicGiftListView(list.slug);
+
+      expect(view.status).toBe("ok");
+      if (view.status !== "ok") throw new Error("unreachable");
+      expect(view.items[0].canPurchase).toBe(false);
+      assertNoQuantityLeak(view);
+    } finally {
+      await prisma.inventory.updateMany({
+        where: { storeId, productVariantId: variantId },
+        data: { physicalQuantity: 50 },
+      });
+    }
+  });
+
+  it("o progresso público nunca passa de 100% quando o item é comprado além do desejado", async () => {
+    const list = await buildList({ purchased: DESIRED * 2 });
+    await prisma.giftList.update({ where: { id: list.id }, data: { showPublicProgress: true } });
+    const view = await getPublicGiftListView(list.slug);
+
+    expect(view.status).toBe("ok");
+    if (view.status !== "ok") throw new Error("unreachable");
+    expect(view.progressPercent).toBe(100);
+    expect(view.items[0].canPurchase).toBe(true);
   });
 
   it("apenas os campos esperados existem no item público (nenhum campo interno extra)", async () => {

@@ -94,11 +94,9 @@ export async function checkoutOnlineAction(slug: string, formData: FormData): Pr
           throw new CheckoutError("item_not_found");
         }
 
-        const availableInList = item.desiredQuantity - item.purchasedQuantity - item.reservedQuantity;
-        if (quantity > availableInList) {
-          throw new CheckoutError("item_unavailable", item.product.name);
-        }
-
+        // A quantidade desejada não limita a compra: o convidado pode
+        // presentear um item mesmo que outros já tenham comprado. O único
+        // limite é o estoque da variação na unidade da lista.
         if (item.variantId) {
           await lockInventory(tx, list.storeId, item.variantId);
           const inventory = await tx.inventory.findUnique({

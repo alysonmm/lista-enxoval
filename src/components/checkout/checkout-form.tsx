@@ -49,7 +49,7 @@ export function CheckoutForm({
 
   const errorMessage = errorCode
     ? errorCode === "item_unavailable" && errorItemName
-      ? `O item "${errorItemName}" não está mais disponível. Remova-o do carrinho e tente novamente.`
+      ? `O item "${errorItemName}" não tem estoque suficiente para essa quantidade. Diminua a quantidade ou remova-o do carrinho e tente novamente.`
       : (ERROR_MESSAGES[errorCode] ?? "Não foi possível concluir o pedido.")
     : null;
 

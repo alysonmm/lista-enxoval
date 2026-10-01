@@ -202,7 +202,7 @@ export default async function PublicGiftListPage({
                 />
               ) : (
                 <Button disabled variant="secondary" className="mt-1 w-full">
-                  ✓ Presente já garantido
+                  Indisponível no momento
                 </Button>
               )}
             </div>

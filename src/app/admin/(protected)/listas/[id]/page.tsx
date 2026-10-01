@@ -460,7 +460,7 @@ export default async function GiftListDetailPage({
                   <TableHead>Desejado</TableHead>
                   <TableHead>Comprado</TableHead>
                   <TableHead>Reservado</TableHead>
-                  <TableHead>Disponível</TableHead>
+                  <TableHead>Restante</TableHead>
                   <TableHead>Preço</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead />
@@ -468,7 +468,7 @@ export default async function GiftListDetailPage({
               </TableHeader>
               <TableBody>
                 {list.items.map((item) => {
-                  const available = item.desiredQuantity - item.purchasedQuantity - item.reservedQuantity;
+                  const remaining = item.desiredQuantity - item.purchasedQuantity - item.reservedQuantity;
                   const price = item.variant?.priceOverride ?? item.product.promoPrice ?? item.product.price;
                   return (
                     <ClickableRow key={item.id} href={`/admin/listas/${list.id}/itens/${item.id}`}>
@@ -482,8 +482,8 @@ export default async function GiftListDetailPage({
                       <TableCell>{item.desiredQuantity}</TableCell>
                       <TableCell>{item.purchasedQuantity}</TableCell>
                       <TableCell className="text-muted-foreground">{item.reservedQuantity}</TableCell>
-                      <TableCell className={available <= 0 ? "text-muted-foreground" : "font-medium"}>
-                        {Math.max(available, 0)}
+                      <TableCell className={remaining <= 0 ? "text-muted-foreground" : "font-medium"}>
+                        {Math.max(remaining, 0)}
                       </TableCell>
                       <TableCell>{formatCentsToBRL(price)}</TableCell>
                       <TableCell>

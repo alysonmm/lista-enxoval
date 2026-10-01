@@ -95,7 +95,7 @@ Estoque **por unidade e variação** (seção 83). `storeId`, `productVariantId`
 | priority (`NORMAL\|DESIRED\|ESSENTIAL`) | loja, pais; público só como rótulo (seção 25), nunca número |
 | notes?, active | loja |
 
-`available = desiredQuantity - purchasedQuantity - reservedQuantity`. O público nunca recebe esse cálculo — recebe só `canPurchase = available > 0 AND inventory.availableQuantity > 0` (ver `API.md`).
+`remaining = desiredQuantity - purchasedQuantity - reservedQuantity` indica quanto falta para atingir o que os pais pediram (uso interno — loja e pais). Atingir o desejado **não** bloqueia novas compras: o item continua à venda e `purchasedQuantity` pode passar de `desiredQuantity`. O público nunca recebe esse cálculo — recebe só `canPurchase = lista ACTIVE AND inventory.availableQuantity > 0` (o estoque só é checado em itens com variação) (ver `API.md`).
 
 ## 7. Vendas
 

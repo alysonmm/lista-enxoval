@@ -1,9 +1,8 @@
 /**
  * Concorrência (seções 54/56): duas vendas simultâneas disputando a última
- * unidade de um item nunca podem ambas ser aprovadas. Sem o SELECT ... FOR
- * UPDATE em registerInStoreSaleAction, as duas transações leriam a mesma
- * quantidade disponível e ambas confirmariam, vendendo além do desejado e
- * além do estoque físico.
+ * unidade em estoque nunca podem ambas ser aprovadas. Sem o SELECT ... FOR
+ * UPDATE em registerInStoreSaleAction, as duas transações leriam o mesmo
+ * saldo e ambas confirmariam, vendendo além do estoque físico.
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -95,7 +94,7 @@ describe("controle de concorrência na venda presencial", () => {
 
     const messages = results.map((r) => (r.status === "rejected" ? (r.reason as Error).message : "NO_REDIRECT_THROWN"));
     const successes = messages.filter((m) => m.startsWith("REDIRECT:/admin/vendas/"));
-    const failures = messages.filter((m) => m.includes("error=exceeds_list_quantity") || m.includes("error=out_of_stock"));
+    const failures = messages.filter((m) => m.includes("error=out_of_stock"));
 
     expect(successes).toHaveLength(1);
     expect(failures).toHaveLength(1);
@@ -110,5 +109,26 @@ describe("controle de concorrência na venda presencial", () => {
 
     const orderCount = await prisma.order.count({ where: { giftListId } });
     expect(orderCount).toBe(1);
+  });
+
+  it("depois de atingir o desejado, o item continua vendável enquanto houver estoque", async () => {
+    // O teste anterior deixou o item com comprado = desejado = 1 e estoque 0.
+    await prisma.inventory.updateMany({
+      where: { storeId, productVariantId: variantId },
+      data: { physicalQuantity: 3 },
+    });
+
+    const formData = buildSaleForm();
+    formData.set("quantity", "2");
+    await expect(registerInStoreSaleAction(giftListId, formData)).rejects.toThrow(/^REDIRECT:\/admin\/vendas\//);
+
+    const updatedItem = await prisma.giftListItem.findUniqueOrThrow({ where: { id: itemId } });
+    expect(updatedItem.desiredQuantity).toBe(1);
+    expect(updatedItem.purchasedQuantity).toBe(3);
+
+    const inventory = await prisma.inventory.findFirstOrThrow({
+      where: { productVariantId: variantId, storeId },
+    });
+    expect(inventory.physicalQuantity).toBe(1);
   });
 });

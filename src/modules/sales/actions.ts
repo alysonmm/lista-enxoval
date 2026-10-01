@@ -28,8 +28,9 @@ async function requireStaff(): Promise<StaffSessionPayload> {
 /**
  * Trava a linha do item da lista para a duração da transação (Postgres
  * `SELECT ... FOR UPDATE`), serializando vendas concorrentes contra o mesmo
- * item. Sem isso, duas vendas simultâneas poderiam ler a mesma quantidade
- * disponível e ambas confirmarem, vendendo além do desejado (seção 54/56).
+ * item. Junto com a trava do estoque, impede que duas vendas simultâneas
+ * leiam o mesmo saldo e ambas confirmem, vendendo além do estoque físico
+ * (seção 54/56).
  */
 async function lockGiftListItem(tx: Tx, itemId: string) {
   await tx.$executeRaw`SELECT id FROM gift_list_items WHERE id = ${itemId} FOR UPDATE`;
@@ -71,9 +72,8 @@ export async function registerInStoreSaleAction(listId: string, formData: FormDa
       if (!item || item.giftListId !== listId) throw new SaleError("item_not_found");
       if (item.giftList.status !== "ACTIVE") throw new SaleError("list_not_active");
 
-      const availableInList = item.desiredQuantity - item.purchasedQuantity - item.reservedQuantity;
-      if (data.quantity > availableInList) throw new SaleError("exceeds_list_quantity");
-
+      // Assim como no checkout online, a quantidade desejada não limita a
+      // venda — só o estoque da unidade.
       const saleStoreId = session.storeId ?? item.giftList.storeId;
 
       if (item.variantId) {

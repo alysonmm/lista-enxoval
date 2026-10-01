@@ -34,6 +34,10 @@ export default async function EditGiftListItemPage({
   if (session.role === "SELLER" && item.giftList.consultantId !== session.userId) notFound();
 
   const updateWithIds = updateGiftListItemAction.bind(null, id, itemId);
+  const purchasedPlusReserved = item.purchasedQuantity + item.reservedQuantity;
+  // Mesmo piso da action: o item pode ter sido comprado além do desejado,
+  // e manter o valor atual precisa continuar válido.
+  const minDesired = Math.min(item.desiredQuantity, purchasedPlusReserved);
 
   return (
     <div className="mx-auto max-w-lg">
@@ -56,12 +60,12 @@ export default async function EditGiftListItemPage({
                 id="desiredQuantity"
                 name="desiredQuantity"
                 type="number"
-                min={item.purchasedQuantity + item.reservedQuantity}
+                min={minDesired}
                 required
                 defaultValue={item.desiredQuantity}
               />
               <p className="text-xs text-muted-foreground">
-                Não pode ser menor que o já comprado + reservado ({item.purchasedQuantity + item.reservedQuantity}).
+                Não pode ser reduzida para menos que o já comprado + reservado ({purchasedPlusReserved}).
               </p>
             </div>
             <div className="flex flex-col gap-1.5">

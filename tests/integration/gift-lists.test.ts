@@ -131,6 +131,39 @@ describe("criação de lista e regras de quantidade", () => {
     expect(unchanged.desiredQuantity).toBe(5); // não foi alterado
   });
 
+  it("permite editar um item comprado além do desejado sem forçar aumento da quantidade", async () => {
+    const { parent } = await helpers.createTestParent();
+    createdCustomerIds.push(parent.customerId);
+    const { giftList } = await helpers.createTestGiftList({ storeId, consultantId: staffId, parentId: parent.id });
+    createdListIds.push(giftList.id);
+    const item = await helpers.createTestGiftListItem({
+      giftListId: giftList.id,
+      productId,
+      desiredQuantity: 1,
+      purchasedQuantity: 3, // convidados compraram além do desejado
+    });
+
+    // Manter a quantidade atual e mudar só a prioridade continua permitido.
+    const keepForm = new FormData();
+    keepForm.set("desiredQuantity", "1");
+    keepForm.set("priority", "ESSENTIAL");
+    await expect(
+      updateGiftListItemAction(giftList.id, item.id, keepForm),
+    ).rejects.toThrow(`REDIRECT:/admin/listas/${giftList.id}?saved=1`);
+
+    const updated = await prisma.giftListItem.findUniqueOrThrow({ where: { id: item.id } });
+    expect(updated.desiredQuantity).toBe(1);
+    expect(updated.priority).toBe("ESSENTIAL");
+
+    // Reduzir ainda mais continua bloqueado.
+    const reduceForm = new FormData();
+    reduceForm.set("desiredQuantity", "0");
+    reduceForm.set("priority", "ESSENTIAL");
+    await expect(
+      updateGiftListItemAction(giftList.id, item.id, reduceForm),
+    ).rejects.toThrow(`REDIRECT:/admin/listas/${giftList.id}?error=invalid_input`);
+  });
+
   it("permite aumentar a quantidade desejada normalmente", async () => {
     const { parent } = await helpers.createTestParent();
     createdCustomerIds.push(parent.customerId);

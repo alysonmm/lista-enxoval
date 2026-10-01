@@ -45,9 +45,9 @@ Estados visuais do produto na página pública:
 | Estado interno | O que o comprador vê |
 |---|---|
 | `can_purchase = true` | Preço + botão `[ PRESENTEAR ]` |
-| `can_purchase = false` (meta atingida OU sem estoque) | `✓ Presente já garantido`, botão oculto/desabilitado |
+| `can_purchase = false` (sem estoque OU lista pausada/encerrada) | `Indisponível no momento`, botão desabilitado |
 
-Nenhum dos dois estados informa quantidade, percentual ou histórico.
+Nenhum dos dois estados informa quantidade, percentual ou histórico. Atingir a quantidade desejada **não** muda o estado: o produto continua com `[ PRESENTEAR ]` para outros convidados — a quantidade desejada orienta os pais e a loja, mas não limita a compra.
 
 ## 4. Visões diferentes sobre a mesma lista
 
@@ -135,9 +135,9 @@ O MVP só está aprovado quando for possível, de ponta a ponta: cadastrar funci
 ## 14. Cenários de referência (usados como roteiro de teste manual/E2E)
 
 - **Cenário principal** (128): Carla (consultora) cria "Enxoval da Helena" com 6 bodies, 4 macacões, 2 mantas, 1 saída, 1 bolsa, 1 kit berço. Gera link/QR. Ana acessa publicamente, vê os produtos sem quantidades, compra a manta — que continua visível.
-- **Cenário presencial** (129): Pedro compra na PDC3 o Kit Berço (desejado 1). Funcionário busca "Helena", vê internamente 1 desejado / 0 comprado, registra a venda. Pais veem "Presenteado: 1 — Presente de Pedro". Página pública mostra "✓ Presente já garantido", sem números.
-- **Cenário de cancelamento** (130): venda do Kit Berço é cancelada com motivo → quantidade comprada decrementada, lista atualizada, auditoria registrada, botão `[PRESENTEAR]` volta a aparecer publicamente.
-- **Cenário de quantidade maior** (131): pais querem 6 bodies; três compradores compram 2+1+2=5; publicamente o produto continua apenas com `[PRESENTEAR]`, sem indicar "falta 1"; ao atingir 6, muda para "✓ Presente já garantido".
+- **Cenário presencial** (129): Pedro compra na PDC3 o Kit Berço (desejado 1). Funcionário busca "Helena", vê internamente 1 desejado / 0 comprado, registra a venda. Pais veem "Presenteado: 1 — Presente de Pedro". Página pública continua mostrando o Kit Berço com `[PRESENTEAR]`, sem números.
+- **Cenário de cancelamento** (130): venda do Kit Berço é cancelada com motivo → quantidade comprada decrementada, estoque devolvido, lista atualizada, auditoria registrada.
+- **Cenário de quantidade maior** (131): pais querem 6 bodies; três compradores compram 2+1+2=5; publicamente o produto continua apenas com `[PRESENTEAR]`, sem indicar "falta 1"; ao atingir 6, continua com `[PRESENTEAR]` — atingir o desejado não tira o produto dos disponíveis.
 
 ## 15. Não fazer agora (fora de escopo desta fase)
 
