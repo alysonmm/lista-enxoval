@@ -190,6 +190,7 @@ describe("privacidade da página pública da lista", () => {
       "variantLabel",
       "price",
       "priorityLabel",
+      "category",
       "canPurchase",
     ].sort();
     expect(Object.keys(view.items[0]).sort()).toEqual(allowedKeys);

@@ -1,14 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ImageOff } from "lucide-react";
 import type { Metadata } from "next";
 
 import { getPublicGiftListView } from "@/modules/gift-lists/public";
-import { formatCentsToBRL } from "@/lib/money";
-import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 import { CartBadge } from "@/components/cart/cart-badge";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { PublicGiftGrid } from "@/components/gift-list/public-gift-grid";
 import { SubmitButton } from "@/components/ui/submit-button";
 
 export async function generateMetadata({
@@ -40,40 +35,15 @@ export async function generateMetadata({
   };
 }
 
-type Filter = "todos" | "disponiveis";
-
-function FilterTab({
-  href,
-  label,
-  active,
-}: {
-  href: string;
-  label: string;
-  active: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={
-        active
-          ? "rounded-full bg-primary px-4 py-1.5 text-sm font-semibold text-primary-foreground"
-          : "rounded-full px-4 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted"
-      }
-    >
-      {label}
-    </Link>
-  );
-}
-
 export default async function PublicGiftListPage({
   params,
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ pin?: string; filtro?: string }>;
+  searchParams: Promise<{ pin?: string; categoria?: string; preco?: string }>;
 }) {
   const { slug } = await params;
-  const { pin, filtro } = await searchParams;
+  const { pin, categoria, preco } = await searchParams;
 
   const view = await getPublicGiftListView(slug, pin);
 
@@ -112,12 +82,6 @@ export default async function PublicGiftListPage({
       </div>
     );
   }
-
-  const filter: Filter = filtro === "disponiveis" ? "disponiveis" : "todos";
-  const filteredItems = view.items.filter((item) => {
-    if (filter === "disponiveis") return item.canPurchase;
-    return true;
-  });
 
   const heading = view.babyName ? `Enxoval da ${view.babyName}` : view.title;
 
@@ -164,69 +128,7 @@ export default async function PublicGiftListPage({
         )}
       </header>
 
-      <nav className="sticky top-0 z-10 flex justify-center gap-1 border-b border-border bg-background/95 px-4 py-3 backdrop-blur">
-        <FilterTab href={`/lista/${slug}`} label="Todos" active={filter === "todos"} />
-        <FilterTab
-          href={`/lista/${slug}?filtro=disponiveis`}
-          label="Disponíveis"
-          active={filter === "disponiveis"}
-        />
-      </nav>
-
-      <main className="mx-auto grid max-w-4xl grid-cols-1 gap-4 px-4 py-6 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredItems.map((item) => (
-          <article
-            key={item.id}
-            className="flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm"
-          >
-            <div className="flex aspect-square items-center justify-center bg-muted">
-              {item.image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={item.image} alt={item.productName} className="size-full object-cover" />
-              ) : (
-                <ImageOff className="size-8 text-muted-foreground" />
-              )}
-            </div>
-            <div className="flex flex-1 flex-col gap-1.5 p-4">
-              {item.priorityLabel && (
-                <Badge variant={item.priorityLabel === "Item essencial" ? "warning" : "accent"} className="self-start">
-                  {item.priorityLabel}
-                </Badge>
-              )}
-              <h2 className="font-semibold leading-snug text-foreground">{item.productName}</h2>
-              {item.variantLabel && (
-                <p className="text-xs text-muted-foreground">{item.variantLabel}</p>
-              )}
-              {item.description && (
-                <p className="line-clamp-2 text-xs text-muted-foreground">{item.description}</p>
-              )}
-              <div className="mt-auto flex items-center justify-between pt-3">
-                <span className="text-lg font-bold text-foreground">
-                  {formatCentsToBRL(item.price)}
-                </span>
-              </div>
-              {item.canPurchase ? (
-                <AddToCartButton
-                  itemId={item.id}
-                  productName={item.productName}
-                  variantLabel={item.variantLabel}
-                  image={item.image}
-                  price={item.price}
-                />
-              ) : (
-                <Button disabled variant="secondary" className="mt-1 w-full">
-                  Indisponível no momento
-                </Button>
-              )}
-            </div>
-          </article>
-        ))}
-        {filteredItems.length === 0 && (
-          <p className="col-span-full py-12 text-center text-muted-foreground">
-            Nenhum produto encontrado neste filtro.
-          </p>
-        )}
-      </main>
+      <PublicGiftGrid items={view.items} initialCategory={categoria} initialPrice={preco} />
       <CartBadge slug={slug} pin={pin} />
     </div>
   );

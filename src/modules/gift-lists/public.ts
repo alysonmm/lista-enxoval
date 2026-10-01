@@ -17,6 +17,8 @@ export type PublicGiftListItem = {
   variantLabel: string | null;
   price: number;
   priorityLabel: "Escolha dos pais" | "Item essencial" | null;
+  /** Categoria principal do produto (a categoria-pai, quando ele está numa subcategoria). */
+  category: { slug: string; name: string };
   canPurchase: boolean;
 };
 
@@ -57,7 +59,10 @@ export async function getPublicGiftListView(slug: string, pin?: string): Promise
       baby: true,
       items: {
         where: { active: true },
-        include: { product: true, variant: { include: { inventory: true } } },
+        include: {
+          product: { include: { category: { include: { parentCategory: true } } } },
+          variant: { include: { inventory: true } },
+        },
         orderBy: { createdAt: "asc" },
       },
     },
@@ -95,6 +100,7 @@ export async function getPublicGiftListView(slug: string, pin?: string): Promise
       );
       canPurchase = totalStock > 0;
     }
+    const category = item.product.category.parentCategory ?? item.product.category;
     return {
       id: item.id,
       productName: item.product.name,
@@ -103,6 +109,7 @@ export async function getPublicGiftListView(slug: string, pin?: string): Promise
       variantLabel: variantLabel(item.variant?.attributes),
       price: item.variant?.priceOverride ?? item.product.promoPrice ?? item.product.price,
       priorityLabel: PRIORITY_LABEL[item.priority] ?? null,
+      category: { slug: category.slug, name: category.name },
       canPurchase,
     };
   });

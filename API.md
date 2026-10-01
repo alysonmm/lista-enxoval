@@ -7,7 +7,7 @@ Next.js App Router: páginas em `src/app`, mutações via **Server Actions** (`"
 ### Público (mobile-first, sem login)
 | Rota | Descrição |
 |---|---|
-| `/lista/[slug]` | Página pública da lista — produtos, filtro (Todos/Disponíveis/Garantidos) via `?filtro=`; "Adicionar ao carrinho" por item |
+| `/lista/[slug]` | Página pública da lista — produtos, filtros de categoria e faixa de preço (no navegador, refletidos em `?categoria=&preco=`) com botão "Limpar filtros"; "Adicionar ao carrinho" por item |
 | `/lista/[slug]/carrinho` | Carrinho (client-side, `localStorage` por slug) — ajustar quantidade, remover, ir para o checkout |
 | `/lista/[slug]/checkout` | Identificação do comprador + mensagem carinhosa (com sugestão via IA) → confirma o pedido |
 | `/lista/[slug]/checkout/confirmado` | Confirmação do pedido (`?order=`) — pagamento é finalizado na loja (sem gateway integrado ainda, seção "Fase 2") |
@@ -48,7 +48,7 @@ Next.js App Router: páginas em `src/app`, mutações via **Server Actions** (`"
 ## 2. Dados públicos (somente leitura, sem sessão)
 
 ### `getPublicGiftListView(slug, pin?)` — `src/modules/gift-lists/public.ts`
-A página `/lista/[slug]` (Server Component) chama esta função diretamente durante o SSR — não existe uma rota JSON separada `/api/public/lists/[slug]`, porque nada no app precisa reconsultar isso via `fetch` no cliente (o filtro Todos/Disponíveis/Garantidos é resolvido com links `?filtro=`, sem JavaScript). Se uma futura integração externa (app mobile, parceiro) precisar do mesmo contrato via HTTP, um route handler fino pode ser adicionado chamando a mesma função — o formato abaixo já reflete exatamente o que ela retorna.
+A página `/lista/[slug]` (Server Component) chama esta função diretamente durante o SSR — não existe uma rota JSON separada `/api/public/lists/[slug]`, porque nada no app precisa reconsultar isso via `fetch` no cliente (os filtros de categoria e preço rodam no navegador sobre os itens já entregues pelo SSR). Se uma futura integração externa (app mobile, parceiro) precisar do mesmo contrato via HTTP, um route handler fino pode ser adicionado chamando a mesma função — o formato abaixo já reflete exatamente o que ela retorna.
 
 ```jsonc
 {
@@ -71,6 +71,7 @@ A página `/lista/[slug]` (Server Component) chama esta função diretamente dur
       "variantLabel": "Único",
       "price": 34990,
       "priorityLabel": "Escolha dos pais",   // opcional, nunca número
+      "category": { "slug": "roupas", "name": "Roupas" },  // categoria principal (a pai, se for subcategoria)
       "canPurchase": true
     }
   ]
