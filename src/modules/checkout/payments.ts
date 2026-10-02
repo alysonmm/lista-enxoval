@@ -67,7 +67,24 @@ export async function syncOrderPaymentFromMercadoPago(paymentId: string): Promis
     });
 
     if (status === "APPROVED" && order.paymentStatus !== "APPROVED") {
-      await tx.order.update({ where: { id: orderId }, data: { paymentStatus: "APPROVED" } });
+      // Defesa extra: só aprova se o valor pago (em reais, na API do Mercado
+      // Pago) cobre o total do pedido calculado no nosso servidor.
+      const paidCents = Math.round((mpPayment.transaction_amount ?? 0) * 100);
+      if (mpPayment.currency_id === "BRL" && paidCents >= order.total) {
+        await tx.order.update({ where: { id: orderId }, data: { paymentStatus: "APPROVED" } });
+      } else {
+        console.error(
+          `Pagamento ${providerTransactionId} aprovado com valor divergente do pedido ${orderId}: ` +
+            `${mpPayment.currency_id} ${paidCents} centavos, esperado BRL ${order.total}.`,
+        );
+      }
+    }
+
+    // Estorno ou chargeback de um pagamento que já tinha aprovado o pedido:
+    // o pedido deixa de aparecer como pago (e some dos presentes recebidos
+    // pelos pais) em vez de continuar "Aprovado" com o dinheiro devolvido.
+    if (status === "REFUNDED" && order.paymentStatus === "APPROVED") {
+      await tx.order.update({ where: { id: orderId }, data: { paymentStatus: "REFUNDED" } });
     }
 
     return { orderId, status };

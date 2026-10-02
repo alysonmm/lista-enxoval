@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/password";
-import { getClientIp, getStaffSession } from "@/lib/auth/current-user";
+import { getClientIp, getStaffSession, type StaffSessionPayload } from "@/lib/auth/current-user";
 import { confirmMasterAdminPassword, MASTER_ADMIN_EMAIL } from "@/lib/auth/confirm-admin-password";
 import { recordAudit } from "@/lib/audit";
 import { staffPasswordSchema, staffSchema } from "./schemas";
@@ -21,6 +21,21 @@ function isUniqueConstraintError(e: unknown): boolean {
   return typeof e === "object" && e !== null && "code" in e && (e as { code?: string }).code === "P2002";
 }
 
+/**
+ * A conta principal (MASTER_ADMIN_EMAIL) é a dona da senha que autoriza as
+ * exclusões. Se outro administrador pudesse redefinir a senha dela, trocar o
+ * e-mail ou rebaixá-la, essa confirmação viraria enfeite — então só a própria
+ * conta principal mexe nos próprios dados.
+ */
+async function guardMasterAdmin(staffId: string, session: StaffSessionPayload): Promise<boolean> {
+  const target = await prisma.user.findUnique({ where: { id: staffId }, select: { email: true } });
+  const isMaster = target?.email.toLowerCase() === MASTER_ADMIN_EMAIL;
+  if (isMaster && session.userId !== staffId) {
+    redirect(`/admin/vendedores/${staffId}?error=cannot_edit_master_admin`);
+  }
+  return isMaster;
+}
+
 function parseStaffForm(formData: FormData) {
   return staffSchema.safeParse({
     name: formData.get("name"),
@@ -33,6 +48,9 @@ function parseStaffForm(formData: FormData) {
 
 export async function createStaffAction(formData: FormData): Promise<void> {
   const session = await requireAdmin();
+  if (String(formData.get("email") ?? "").trim().toLowerCase() === MASTER_ADMIN_EMAIL) {
+    redirect("/admin/vendedores/novo?error=duplicate");
+  }
 
   const parsed = parseStaffForm(formData);
   const passwordParsed = staffPasswordSchema.safeParse({ password: formData.get("password") });
@@ -84,6 +102,15 @@ export async function updateStaffAction(staffId: string, formData: FormData): Pr
     redirect(`/admin/vendedores/${staffId}?error=cannot_deactivate_self`);
   }
 
+  const isMaster = await guardMasterAdmin(staffId, session);
+  const newEmail = parsed.data.email.toLowerCase();
+  if (isMaster && (newEmail !== MASTER_ADMIN_EMAIL || parsed.data.role !== "ADMIN" || !active)) {
+    redirect(`/admin/vendedores/${staffId}?error=master_admin_locked`);
+  }
+  if (!isMaster && newEmail === MASTER_ADMIN_EMAIL) {
+    redirect(`/admin/vendedores/${staffId}?error=duplicate`);
+  }
+
   try {
     await prisma.user.update({
       where: { id: staffId },
@@ -117,6 +144,7 @@ export async function updateStaffAction(staffId: string, formData: FormData): Pr
 
 export async function resetStaffPasswordAction(staffId: string, formData: FormData): Promise<void> {
   const session = await requireAdmin();
+  await guardMasterAdmin(staffId, session);
 
   const parsed = staffPasswordSchema.safeParse({ password: formData.get("password") });
   if (!parsed.success) redirect(`/admin/vendedores/${staffId}?error=invalid_password`);

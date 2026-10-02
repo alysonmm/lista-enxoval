@@ -77,6 +77,8 @@ describe("syncOrderPaymentFromMercadoPago", () => {
       external_reference: orderId,
       payment_type_id: "bank_transfer",
       payment_method_id: "pix",
+      transaction_amount: 50,
+      currency_id: "BRL",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
@@ -104,6 +106,8 @@ describe("syncOrderPaymentFromMercadoPago", () => {
       external_reference: orderId,
       payment_type_id: "bank_transfer",
       payment_method_id: "pix",
+      transaction_amount: 50,
+      currency_id: "BRL",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
@@ -118,6 +122,51 @@ describe("syncOrderPaymentFromMercadoPago", () => {
     // Uma segunda notificação para o mesmo pagamento gera uma nova linha de
     // evento (auditoria), mas continua sendo o mesmo Payment.
     expect(order.payments[0]!.transactions).toHaveLength(2);
+  });
+
+  it("marca o pedido como estornado quando o pagamento aprovado sofre chargeback", async () => {
+    fetchMock.mockResolvedValueOnce({
+      id: 123456789,
+      status: "charged_back",
+      status_detail: "settled",
+      external_reference: orderId,
+      payment_type_id: "bank_transfer",
+      payment_method_id: "pix",
+      transaction_amount: 50,
+      currency_id: "BRL",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    await syncOrderPaymentFromMercadoPago("123456789");
+
+    const order = await prisma.order.findUniqueOrThrow({ where: { id: orderId }, include: { payments: true } });
+    expect(order.paymentStatus).toBe("REFUNDED");
+    expect(order.payments[0]!.status).toBe("REFUNDED");
+  });
+
+  it("não aprova quando o valor pago é menor que o total do pedido", async () => {
+    const cheapOrder = await prisma.order.create({
+      data: { giftListId, buyerId, channel: "ONLINE", storeId, subtotal: 5000, total: 5000, paymentStatus: "PENDING" },
+    });
+    fetchMock.mockResolvedValueOnce({
+      id: 555000111,
+      status: "approved",
+      status_detail: "accredited",
+      external_reference: cheapOrder.id,
+      payment_type_id: "credit_card",
+      payment_method_id: "visa",
+      transaction_amount: 0.5,
+      currency_id: "BRL",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await syncOrderPaymentFromMercadoPago("555000111");
+
+    const order = await prisma.order.findUniqueOrThrow({ where: { id: cheapOrder.id } });
+    expect(order.paymentStatus).toBe("PENDING");
+    expect(errorSpy).toHaveBeenCalled();
+    errorSpy.mockRestore();
   });
 
   it("ignora quando o pedido referenciado (external_reference) não existe", async () => {

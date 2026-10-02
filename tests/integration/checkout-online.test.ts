@@ -170,6 +170,26 @@ describe("checkout online (carrinho com múltiplos itens)", () => {
     expect(updatedItem.desiredQuantity).toBe(3);
   });
 
+  it("recusa quantidade acima do teto por item (ninguém segura o estoque com um pedido gigante)", async () => {
+    const before = await prisma.giftListItem.findUniqueOrThrow({ where: { id: multiItemAId } });
+    await expect(
+      checkoutOnlineAction(slug, buildForm([{ itemId: multiItemAId, quantity: 21 }])),
+    ).rejects.toThrow(`REDIRECT:/lista/${slug}/checkout?error=invalid_input`);
+    // Linhas repetidas também não podem somar além do teto.
+    await expect(
+      checkoutOnlineAction(
+        slug,
+        buildForm([
+          { itemId: multiItemAId, quantity: 15 },
+          { itemId: multiItemAId, quantity: 15 },
+        ]),
+      ),
+    ).rejects.toThrow(`REDIRECT:/lista/${slug}/checkout?error=invalid_input`);
+
+    const after = await prisma.giftListItem.findUniqueOrThrow({ where: { id: multiItemAId } });
+    expect(after.purchasedQuantity).toBe(before.purchasedQuantity);
+  });
+
   it("aprova exatamente um dos dois checkouts simultâneos pela última unidade em estoque", async () => {
     const results = await Promise.allSettled([
       checkoutOnlineAction(slug, buildForm([{ itemId: raceItemId, quantity: 1 }])),

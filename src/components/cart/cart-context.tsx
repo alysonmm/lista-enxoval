@@ -24,6 +24,8 @@ type CartContextValue = {
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
+// Mesmo teto que o servidor aplica no checkout (MAX_QUANTITY_PER_ITEM em
+// modules/checkout/schemas.ts) — mantenha os dois iguais.
 const MAX_QUANTITY_PER_LINE = 20;
 
 export function cartStorageKey(slug: string) {

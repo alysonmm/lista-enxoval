@@ -232,6 +232,10 @@ export async function updateGiftListAction(listId: string, formData: FormData): 
   if (data.visibility === "PIN_PROTECTED" && !data.accessPin) {
     redirect(`/admin/listas/${listId}?error=missing_pin`);
   }
+  // Mesma regra da criação: vendedor só pode ser o próprio consultor da lista.
+  if (session.role === "SELLER" && data.consultantId !== session.userId) {
+    redirect(`/admin/listas/${listId}?error=forbidden`);
+  }
 
   await prisma.giftList.update({
     where: { id: listId },
@@ -508,8 +512,10 @@ export async function updateGiftListItemAction(
   if (!parsed.success) redirect(`/admin/listas/${listId}?error=invalid_input`);
   const data = parsed.data;
 
+  // O acesso foi checado para `listId`: o item precisa ser dessa lista,
+  // senão um vendedor alteraria itens de listas de outros consultores.
   const current = await prisma.giftListItem.findUnique({ where: { id: itemId } });
-  if (!current) redirect(`/admin/listas/${listId}?error=not_found`);
+  if (!current || current.giftListId !== listId) redirect(`/admin/listas/${listId}?error=not_found`);
   // Reduzir a quantidade desejada só é permitido até o já comprado +
   // reservado. Como o item continua à venda depois de atingir o desejado,
   // ele pode ter sido comprado além disso — nesse caso manter (ou aumentar)
@@ -543,7 +549,7 @@ export async function toggleGiftListItemActiveAction(listId: string, itemId: str
   await requireListAccess(listId, session);
 
   const item = await prisma.giftListItem.findUnique({ where: { id: itemId } });
-  if (!item) redirect(`/admin/listas/${listId}?error=not_found`);
+  if (!item || item.giftListId !== listId) redirect(`/admin/listas/${listId}?error=not_found`);
 
   await prisma.giftListItem.update({ where: { id: itemId }, data: { active: !item.active } });
   await recordAudit({

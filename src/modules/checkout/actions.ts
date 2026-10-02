@@ -10,7 +10,7 @@ import { recordAudit } from "@/lib/audit";
 import { generateGiftMessage } from "@/lib/ai";
 import { createCheckoutPreference, isMercadoPagoConfigured } from "@/lib/mercadopago";
 import { getAppBaseUrl } from "@/lib/qrcode";
-import { checkoutOnlineSchema, generateGiftMessageSchema } from "./schemas";
+import { checkoutOnlineSchema, generateGiftMessageSchema, MAX_QUANTITY_PER_ITEM } from "./schemas";
 
 function variantLabel(attributes: unknown): string {
   if (!attributes || typeof attributes !== "object") return "";
@@ -70,6 +70,12 @@ export async function checkoutOnlineAction(slug: string, formData: FormData): Pr
     const quantity = data.quantities[index] ?? 0;
     linesByItem.set(itemId, (linesByItem.get(itemId) ?? 0) + quantity);
   });
+  // Linhas repetidas não podem somar além do teto por item.
+  if ([...linesByItem.values()].some((quantity) => quantity > MAX_QUANTITY_PER_ITEM)) {
+    const params = new URLSearchParams({ error: "invalid_input" });
+    if (pin) params.set("pin", pin);
+    redirect(`/lista/${slug}/checkout?${params.toString()}`);
+  }
 
   let orderId: string;
   try {

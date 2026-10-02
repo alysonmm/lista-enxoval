@@ -22,6 +22,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   cannot_deactivate_self: "Você não pode desativar sua própria conta.",
   cannot_delete_self: "Você não pode excluir sua própria conta.",
   cannot_delete_master_admin: "Esta conta não pode ser excluída.",
+  cannot_edit_master_admin: "Somente a própria conta principal pode alterar os dados ou a senha dela.",
+  master_admin_locked: "A conta principal precisa continuar ativa, como Administrador e com o mesmo e-mail.",
   invalid_confirm_password: `Senha de ${MASTER_ADMIN_EMAIL} incorreta. Exclusão não realizada.`,
 };
 

@@ -27,7 +27,7 @@ vi.mock("@/lib/auth/current-user", async (importOriginal) => {
   };
 });
 
-const { createGiftListAction, addGiftListItemAction, updateGiftListItemAction } = await import(
+const { createGiftListAction, addGiftListItemAction, updateGiftListItemAction, toggleGiftListItemActiveAction } = await import(
   "@/modules/gift-lists/actions"
 );
 const { prisma } = await import("@/lib/prisma");
@@ -40,6 +40,7 @@ describe("criação de lista e regras de quantidade", () => {
   let staffId: string;
   const createdListIds: string[] = [];
   const createdCustomerIds: string[] = [];
+  const createdStaffIds: string[] = [];
 
   beforeAll(async () => {
     const store = await helpers.createTestStore();
@@ -60,6 +61,7 @@ describe("criação de lista e regras de quantidade", () => {
       if (parent) await helpers.cleanupParent(parent.id);
     }
     await helpers.cleanupProduct(productId);
+    for (const id of createdStaffIds) await helpers.cleanupStaff(id);
     await helpers.cleanupStaff(staffId);
     await helpers.cleanupStore(storeId);
     await prisma.category.delete({ where: { id: categoryId } });
@@ -162,6 +164,41 @@ describe("criação de lista e regras de quantidade", () => {
     await expect(
       updateGiftListItemAction(giftList.id, item.id, reduceForm),
     ).rejects.toThrow(`REDIRECT:/admin/listas/${giftList.id}?error=invalid_input`);
+  });
+
+  it("não permite alterar um item de outra lista passando a própria lista no lugar", async () => {
+    // A sessão é de uma vendedora; a lista "dela" e a lista de outro consultor.
+    const { parent: myParent } = await helpers.createTestParent();
+    createdCustomerIds.push(myParent.customerId);
+    const { giftList: myList } = await helpers.createTestGiftList({ storeId, consultantId: staffId, parentId: myParent.id });
+    createdListIds.push(myList.id);
+
+    const otherStaff = await helpers.createTestStaff("SELLER", storeId);
+    createdStaffIds.push(otherStaff.id);
+    const { parent: otherParent } = await helpers.createTestParent();
+    createdCustomerIds.push(otherParent.customerId);
+    const { giftList: otherList } = await helpers.createTestGiftList({
+      storeId,
+      consultantId: otherStaff.id,
+      parentId: otherParent.id,
+    });
+    createdListIds.push(otherList.id);
+    const otherItem = await helpers.createTestGiftListItem({ giftListId: otherList.id, productId, desiredQuantity: 2 });
+
+    const formData = new FormData();
+    formData.set("desiredQuantity", "99");
+    formData.set("priority", "ESSENTIAL");
+    await expect(
+      updateGiftListItemAction(myList.id, otherItem.id, formData),
+    ).rejects.toThrow(`REDIRECT:/admin/listas/${myList.id}?error=not_found`);
+    await expect(
+      toggleGiftListItemActiveAction(myList.id, otherItem.id),
+    ).rejects.toThrow(`REDIRECT:/admin/listas/${myList.id}?error=not_found`);
+
+    const unchanged = await prisma.giftListItem.findUniqueOrThrow({ where: { id: otherItem.id } });
+    expect(unchanged.desiredQuantity).toBe(2);
+    expect(unchanged.priority).toBe("NORMAL");
+    expect(unchanged.active).toBe(true);
   });
 
   it("permite aumentar a quantidade desejada normalmente", async () => {

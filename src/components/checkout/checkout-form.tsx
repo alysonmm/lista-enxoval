@@ -79,11 +79,13 @@ export function CheckoutForm({
 
   function handleGenerateMessage() {
     startGenerating(async () => {
+      // Corta nos mesmos limites que o servidor aceita (generateGiftMessageSchema),
+      // para que um carrinho grande ou um nome longo não faça o botão falhar.
       const result = await generateGiftMessageAction({
-        babyName,
-        listTitle,
-        itemNames: lines.map((line) => line.productName),
-        buyerName: buyerName || undefined,
+        babyName: babyName?.slice(0, 60) ?? null,
+        listTitle: listTitle.slice(0, 120),
+        itemNames: lines.slice(0, 20).map((line) => line.productName.slice(0, 150)),
+        buyerName: buyerName.trim().slice(0, 120) || undefined,
       });
       if ("message" in result) setMessage(result.message);
     });
