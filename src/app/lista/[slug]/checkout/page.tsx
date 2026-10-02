@@ -26,7 +26,6 @@ export default async function CheckoutPage({
       slug={slug}
       pin={pin}
       listTitle={view.title}
-      babyName={view.babyName}
       readOnly={view.readOnly}
       errorCode={error}
       errorItemName={item}

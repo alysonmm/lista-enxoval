@@ -7,10 +7,9 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getClientIp } from "@/lib/auth/current-user";
 import { recordAudit } from "@/lib/audit";
-import { generateGiftMessage } from "@/lib/ai";
 import { createCheckoutPreference, isMercadoPagoConfigured } from "@/lib/mercadopago";
 import { getAppBaseUrl } from "@/lib/qrcode";
-import { checkoutOnlineSchema, generateGiftMessageSchema, MAX_QUANTITY_PER_ITEM } from "./schemas";
+import { checkoutOnlineSchema, MAX_QUANTITY_PER_ITEM } from "./schemas";
 
 function variantLabel(attributes: unknown): string {
   if (!attributes || typeof attributes !== "object") return "";
@@ -247,19 +246,4 @@ export async function startMercadoPagoPaymentAction(orderId: string): Promise<vo
   }
 
   redirect(initPoint);
-}
-
-export async function generateGiftMessageAction(
-  input: unknown,
-): Promise<{ message: string } | { error: string }> {
-  const parsed = generateGiftMessageSchema.safeParse(input);
-  if (!parsed.success) return { error: "invalid_input" };
-
-  const message = await generateGiftMessage({
-    babyName: parsed.data.babyName || null,
-    listTitle: parsed.data.listTitle,
-    itemNames: parsed.data.itemNames,
-    buyerName: parsed.data.buyerName || null,
-  });
-  return { message };
 }

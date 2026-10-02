@@ -9,7 +9,7 @@ Next.js App Router: páginas em `src/app`, mutações via **Server Actions** (`"
 |---|---|
 | `/lista/[slug]` | Página pública da lista — produtos, filtros de categoria e faixa de preço (no navegador, refletidos em `?categoria=&preco=`) com botão "Limpar filtros"; "Adicionar ao carrinho" por item |
 | `/lista/[slug]/carrinho` | Carrinho (client-side, `localStorage` por slug) — ajustar quantidade, remover, ir para o checkout |
-| `/lista/[slug]/checkout` | Identificação do comprador + mensagem carinhosa (com sugestão via IA) → confirma o pedido |
+| `/lista/[slug]/checkout` | Identificação do comprador + mensagem carinhosa (opcional) → confirma o pedido |
 | `/lista/[slug]/checkout/confirmado` | Confirmação do pedido (`?order=`) — pagamento é finalizado na loja (sem gateway integrado ainda, seção "Fase 2") |
 
 ### Portal dos pais (login: e-mail/telefone + senha ou magic link)

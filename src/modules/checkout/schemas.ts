@@ -27,14 +27,3 @@ export const checkoutOnlineSchema = z
   });
 
 export type CheckoutOnlineInput = z.infer<typeof checkoutOnlineSchema>;
-
-// O gerador de mensagem é público e chama uma API paga por tamanho de texto:
-// limites de tamanho mantêm o custo de cada chamada pequeno e previsível.
-export const generateGiftMessageSchema = z.object({
-  babyName: z.string().trim().max(60).nullish(),
-  listTitle: z.string().trim().min(1).max(120),
-  itemNames: z.array(z.string().trim().min(1).max(150)).min(1).max(20),
-  buyerName: z.string().trim().max(120).optional(),
-});
-
-export type GenerateGiftMessageInput = z.infer<typeof generateGiftMessageSchema>;

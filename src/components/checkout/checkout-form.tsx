@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import Link from "next/link";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { useCart } from "@/components/cart/cart-context";
-import { checkoutOnlineAction, generateGiftMessageAction } from "@/modules/checkout/actions";
+import { checkoutOnlineAction } from "@/modules/checkout/actions";
 import { formatCentsToBRL } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -13,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 const ERROR_MESSAGES: Record<string, string> = {
   invalid_input: "Preencha os campos obrigatórios corretamente.",
@@ -27,7 +25,6 @@ export function CheckoutForm({
   slug,
   pin,
   listTitle,
-  babyName,
   readOnly,
   errorCode,
   errorItemName,
@@ -35,15 +32,11 @@ export function CheckoutForm({
   slug: string;
   pin?: string;
   listTitle: string;
-  babyName: string | null;
   readOnly: boolean;
   errorCode?: string;
   errorItemName?: string;
 }) {
   const { lines, subtotal } = useCart();
-  const [message, setMessage] = useState("");
-  const [buyerName, setBuyerName] = useState("");
-  const [isGenerating, startGenerating] = useTransition();
 
   const cartHref = `/lista/${slug}/carrinho${pin ? `?pin=${pin}` : ""}`;
 
@@ -75,20 +68,6 @@ export function CheckoutForm({
         </Button>
       </div>
     );
-  }
-
-  function handleGenerateMessage() {
-    startGenerating(async () => {
-      // Corta nos mesmos limites que o servidor aceita (generateGiftMessageSchema),
-      // para que um carrinho grande ou um nome longo não faça o botão falhar.
-      const result = await generateGiftMessageAction({
-        babyName: babyName?.slice(0, 60) ?? null,
-        listTitle: listTitle.slice(0, 120),
-        itemNames: lines.slice(0, 20).map((line) => line.productName.slice(0, 150)),
-        buyerName: buyerName.trim().slice(0, 120) || undefined,
-      });
-      if ("message" in result) setMessage(result.message);
-    });
   }
 
   return (
@@ -150,13 +129,7 @@ export function CheckoutForm({
 
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="buyerName">Seu nome</Label>
-              <Input
-                id="buyerName"
-                name="buyerName"
-                required
-                value={buyerName}
-                onChange={(e) => setBuyerName(e.target.value)}
-              />
+              <Input id="buyerName" name="buyerName" required />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-1.5">
@@ -170,30 +143,13 @@ export function CheckoutForm({
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <Label htmlFor="message">Mensagem carinhosa para os pais (opcional)</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleGenerateMessage}
-                  disabled={isGenerating}
-                >
-                  {isGenerating ? (
-                    <LoadingSpinner className="size-4" />
-                  ) : (
-                    <Sparkles className="size-4" />
-                  )}
-                  Gerar mensagem com IA
-                </Button>
-              </div>
+              <Label htmlFor="message">Mensagem carinhosa para os pais (opcional)</Label>
               <Textarea
                 id="message"
                 name="message"
                 rows={4}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Escreva uma mensagem carinhosa ou gere uma automaticamente..."
+                maxLength={2000}
+                placeholder="Escreva uma mensagem carinhosa..."
               />
             </div>
 
